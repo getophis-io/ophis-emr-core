@@ -130,6 +130,9 @@ bench --site <test site> run-tests --app ophis_emr_core
 Issues and pull requests are welcome. Use synthetic data only: never put real patient information
 in an issue, a test, a fixture or a log. Add a test with any change in behaviour.
 
+If you work with an AI coding agent, the project's rules for it are in `AGENTS.md`. Claude Code's
+own settings, skills and subagents go in `.claude/`.
+
 ## Contact
 
 Questions about development, contributions or security: [dev@getophis.io](mailto:dev@getophis.io).
