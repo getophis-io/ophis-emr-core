@@ -1,0 +1,169 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-10-10 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "patient",
+  "action",
+  "summary",
+  "column_break_main",
+  "event_time",
+  "user",
+  "backfilled",
+  "record_section",
+  "reference_doctype",
+  "column_break_record",
+  "reference_name",
+  "changes_section",
+  "changes"
+ ],
+ "fields": [
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "label": "Patient",
+   "options": "Patient",
+   "reqd": 1,
+   "search_index": 1,
+   "in_standard_filter": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "action",
+   "fieldtype": "Select",
+   "read_only": 1,
+   "label": "Action",
+   "options": "Created\nUpdated\nSigned\nDeleted",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "summary",
+   "fieldtype": "Data",
+   "read_only": 1,
+   "label": "Summary",
+   "in_list_view": 1,
+   "length": 255
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break",
+   "read_only": 1
+  },
+  {
+   "fieldname": "event_time",
+   "fieldtype": "Datetime",
+   "read_only": 1,
+   "label": "Event Time",
+   "reqd": 1,
+   "in_list_view": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "label": "User",
+   "options": "User",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "backfilled",
+   "fieldtype": "Check",
+   "read_only": 1,
+   "label": "Backfilled",
+   "description": "Reconstructed from a record that existed before the changelog was introduced"
+  },
+  {
+   "fieldname": "record_section",
+   "fieldtype": "Section Break",
+   "read_only": 1,
+   "label": "Record"
+  },
+  {
+   "fieldname": "reference_doctype",
+   "fieldtype": "Link",
+   "read_only": 1,
+   "label": "Record Type",
+   "options": "DocType",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_record",
+   "fieldtype": "Column Break",
+   "read_only": 1
+  },
+  {
+   "fieldname": "reference_name",
+   "fieldtype": "Data",
+   "read_only": 1,
+   "label": "Record",
+   "reqd": 1,
+   "search_index": 1,
+   "description": "Name of the record the event is about. Kept as text so the entry survives if the record is deleted."
+  },
+  {
+   "fieldname": "changes_section",
+   "fieldtype": "Section Break",
+   "read_only": 1,
+   "label": "Changes"
+  },
+  {
+   "fieldname": "changes",
+   "fieldtype": "JSON",
+   "read_only": 1,
+   "label": "Changes"
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-10 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Patient Event",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "export": 1,
+   "print": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "event_time",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "summary"
+}

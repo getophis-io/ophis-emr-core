@@ -1,0 +1,267 @@
+{
+ "actions": [],
+ "autoname": "format:ENC-{YYYY}-{#####}",
+ "creation": "2026-10-10 11:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "patient",
+  "patient_name",
+  "practitioner",
+  "appointment",
+  "column_break_main",
+  "status",
+  "encounter_date",
+  "encounter_type",
+  "visit_type",
+  "completed_on",
+  "handover_section",
+  "stage",
+  "room",
+  "nurse",
+  "column_break_handover",
+  "picked_up_on",
+  "handed_over_on",
+  "visit_section",
+  "reason_for_visit",
+  "nurse_notes",
+  "chart_section",
+  "chart_summary_html"
+ ],
+ "fields": [
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "label": "Patient",
+   "options": "Patient",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Patient Name",
+   "fetch_from": "patient.patient_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Practitioner",
+   "options": "Practitioner",
+   "in_standard_filter": 1,
+   "in_list_view": 1,
+   "description": "Empty while a walk-in waits for any physician to take it."
+  },
+  {
+   "fieldname": "appointment",
+   "fieldtype": "Link",
+   "label": "Appointment",
+   "options": "Patient Appointment",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "In Progress\nCompleted",
+   "default": "In Progress",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "encounter_date",
+   "fieldtype": "Datetime",
+   "label": "Encounter Date",
+   "reqd": 1,
+   "default": "Now",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "encounter_type",
+   "fieldtype": "Select",
+   "label": "Encounter Type",
+   "options": "In-person Appointment\nIn-person Walk-in\nTelephone\nOnline - Video",
+   "default": "In-person Appointment",
+   "reqd": 1
+  },
+  {
+   "fieldname": "visit_type",
+   "fieldtype": "Select",
+   "label": "Visit Type",
+   "options": "Family Clinic\nWalk-in",
+   "default": "Family Clinic",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Family Clinic: booked with the patient's own practitioner. Walk-in: seen by whoever is free."
+  },
+  {
+   "fieldname": "completed_on",
+   "fieldtype": "Datetime",
+   "label": "Completed On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "visit_section",
+   "fieldtype": "Section Break",
+   "label": "Visit"
+  },
+  {
+   "fieldname": "reason_for_visit",
+   "fieldtype": "Small Text",
+   "label": "Reason for Visit"
+  },
+  {
+   "fieldname": "chart_section",
+   "fieldtype": "Section Break",
+   "label": "Chart Summary"
+  },
+  {
+   "fieldname": "chart_summary_html",
+   "fieldtype": "HTML",
+   "label": "Chart Summary"
+  },
+  {
+   "fieldname": "handover_section",
+   "fieldtype": "Section Break",
+   "label": "Nurse and Physician"
+  },
+  {
+   "fieldname": "stage",
+   "fieldtype": "Select",
+   "label": "Stage",
+   "options": "Waiting for Nurse\nWith Nurse\nWith Physician",
+   "default": "With Physician",
+   "read_only": 1,
+   "in_standard_filter": 1,
+   "description": "Who has the patient: a visit opened at check-in waits for a nurse, who hands it over to the physician"
+  },
+  {
+   "fieldname": "room",
+   "fieldtype": "Link",
+   "label": "Room",
+   "options": "Room",
+   "search_index": 1
+  },
+  {
+   "fieldname": "nurse",
+   "fieldtype": "Link",
+   "label": "Nurse",
+   "options": "User",
+   "read_only": 1,
+   "description": "The nurse who picked the visit up"
+  },
+  {
+   "fieldname": "column_break_handover",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "picked_up_on",
+   "fieldtype": "Datetime",
+   "label": "Picked Up On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "handed_over_on",
+   "fieldtype": "Datetime",
+   "label": "Handed Over On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "nurse_notes",
+   "fieldtype": "Small Text",
+   "label": "Nurse's Notes",
+   "description": "What the nurse found before the physician saw the patient. Not a signed clinical note."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [
+  {
+   "link_doctype": "Clinical Note",
+   "link_fieldname": "encounter"
+  },
+  {
+   "link_doctype": "Vital Signs",
+   "link_fieldname": "encounter"
+  },
+  {
+   "link_doctype": "Patient Medication",
+   "link_fieldname": "encounter"
+  },
+  {
+   "link_doctype": "Patient Order",
+   "link_fieldname": "encounter"
+  },
+  {
+   "link_doctype": "Patient Referral",
+   "link_fieldname": "encounter"
+  }
+ ],
+ "modified": "2026-10-15 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Encounter",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "patient_name,encounter_date",
+ "sort_field": "encounter_date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "patient_name",
+ "track_changes": 1,
+ "track_views": 1
+}

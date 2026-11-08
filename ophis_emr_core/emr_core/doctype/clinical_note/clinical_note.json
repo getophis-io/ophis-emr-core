@@ -1,0 +1,240 @@
+{
+ "actions": [],
+ "autoname": "format:NOTE-{YYYY}-{#####}",
+ "creation": "2026-10-10 11:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "patient",
+  "patient_name",
+  "encounter",
+  "practitioner",
+  "column_break_main",
+  "status",
+  "note_type",
+  "note_date",
+  "amendment_section",
+  "amends",
+  "column_break_amendment",
+  "amendment_reason",
+  "soap_section",
+  "subjective",
+  "objective",
+  "assessment",
+  "plan",
+  "signature_section",
+  "signed_by",
+  "signed_on",
+  "column_break_signature",
+  "superseded_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "label": "Patient",
+   "options": "Patient",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Patient Name",
+   "fetch_from": "patient.patient_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "encounter",
+   "fieldtype": "Link",
+   "label": "Encounter",
+   "options": "Encounter",
+   "search_index": 1
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Author",
+   "options": "Practitioner",
+   "reqd": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nSigned\nAmended",
+   "default": "Draft",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "note_type",
+   "fieldtype": "Select",
+   "label": "Note Type",
+   "options": "SOAP\nProgress Note\nPhone Note",
+   "default": "SOAP",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "note_date",
+   "fieldtype": "Datetime",
+   "label": "Note Date",
+   "reqd": 1,
+   "default": "Now",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "amendment_section",
+   "fieldtype": "Section Break",
+   "label": "Amendment",
+   "depends_on": "eval:doc.amends"
+  },
+  {
+   "fieldname": "amends",
+   "fieldtype": "Link",
+   "label": "Amends",
+   "options": "Clinical Note",
+   "read_only": 1,
+   "no_copy": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "column_break_amendment",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "amendment_reason",
+   "fieldtype": "Small Text",
+   "label": "Reason for Amendment",
+   "no_copy": 1,
+   "mandatory_depends_on": "eval:doc.amends"
+  },
+  {
+   "fieldname": "soap_section",
+   "fieldtype": "Section Break",
+   "label": "Note"
+  },
+  {
+   "fieldname": "subjective",
+   "fieldtype": "Long Text",
+   "label": "Subjective"
+  },
+  {
+   "fieldname": "objective",
+   "fieldtype": "Long Text",
+   "label": "Objective"
+  },
+  {
+   "fieldname": "assessment",
+   "fieldtype": "Long Text",
+   "label": "Assessment"
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Long Text",
+   "label": "Plan"
+  },
+  {
+   "fieldname": "signature_section",
+   "fieldtype": "Section Break",
+   "label": "Signature"
+  },
+  {
+   "fieldname": "signed_by",
+   "fieldtype": "Link",
+   "label": "Signed By",
+   "options": "User",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "signed_on",
+   "fieldtype": "Datetime",
+   "label": "Signed On",
+   "read_only": 1,
+   "no_copy": 1
+  },
+  {
+   "fieldname": "column_break_signature",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "superseded_by",
+   "fieldtype": "Link",
+   "label": "Superseded By",
+   "options": "Clinical Note",
+   "read_only": 1,
+   "allow_on_submit": 1,
+   "no_copy": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2026-10-10 11:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Clinical Note",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1,
+   "submit": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "patient_name,note_date,note_type",
+ "sort_field": "note_date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "patient_name",
+ "track_changes": 1,
+ "track_views": 1
+}

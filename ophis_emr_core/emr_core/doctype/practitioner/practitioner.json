@@ -1,0 +1,253 @@
+{
+ "actions": [],
+ "autoname": "format:PRAC-{####}",
+ "creation": "2026-10-10 11:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "first_name",
+  "last_name",
+  "practitioner_name",
+  "practitioner_type",
+  "column_break_main",
+  "status",
+  "user",
+  "company",
+  "default_appointment_duration",
+  "accepting_patients",
+  "employee",
+  "registration_section",
+  "college_registration_number",
+  "registration_organization",
+  "ohip_specialty_code",
+  "column_break_billing",
+  "ohip_billing_number",
+  "ohip_group_number",
+  "qualifications",
+  "contact_section",
+  "phone",
+  "column_break_contact",
+  "email"
+ ],
+ "fields": [
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "practitioner_name",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "practitioner_type",
+   "fieldtype": "Select",
+   "label": "Practitioner Type",
+   "options": "Family Physician\nNurse Practitioner\nRegistered Nurse\nRegistered Practical Nurse\nPhysician Assistant\nOther",
+   "default": "Family Physician",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nInactive",
+   "default": "Active",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "user",
+   "fieldtype": "Link",
+   "label": "User",
+   "options": "User",
+   "unique": 1,
+   "description": "Login used by this practitioner"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Clinic",
+   "options": "Company"
+  },
+  {
+   "fieldname": "default_appointment_duration",
+   "fieldtype": "Int",
+   "label": "Default Appointment Duration (min)",
+   "default": "15",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "accepting_patients",
+   "fieldtype": "Check",
+   "label": "Accepting Patients",
+   "default": "1",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "New patients can be assigned to this practitioner"
+  },
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "label": "Staff Record",
+   "options": "Employee",
+   "read_only": 1,
+   "search_index": 1,
+   "description": "Set when the practitioner is managed by an HR app, which then keeps this record up to date",
+   "ignore_user_permissions": 1
+  },
+  {
+   "fieldname": "registration_section",
+   "fieldtype": "Section Break",
+   "label": "Registration and Billing"
+  },
+  {
+   "fieldname": "college_registration_number",
+   "fieldtype": "Data",
+   "label": "College Registration Number",
+   "description": "CPSO or CNO registration number"
+  },
+  {
+   "fieldname": "registration_organization",
+   "fieldtype": "Data",
+   "label": "Registering Organization",
+   "description": "The college that issued the registration, such as CPSO or CNO"
+  },
+  {
+   "fieldname": "ohip_specialty_code",
+   "fieldtype": "Data",
+   "label": "OHIP Specialty Code",
+   "default": "00",
+   "length": 2
+  },
+  {
+   "fieldname": "column_break_billing",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ohip_billing_number",
+   "fieldtype": "Data",
+   "label": "OHIP Billing Number",
+   "length": 6,
+   "description": "6-digit provider number"
+  },
+  {
+   "fieldname": "ohip_group_number",
+   "fieldtype": "Data",
+   "label": "OHIP Group Number",
+   "length": 4
+  },
+  {
+   "fieldname": "qualifications",
+   "fieldtype": "Small Text",
+   "label": "Qualifications"
+  },
+  {
+   "fieldname": "contact_section",
+   "fieldtype": "Section Break",
+   "label": "Contact"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "column_break_contact",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-11 09:30:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Practitioner",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "practitioner_name,practitioner_type",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "practitioner_name",
+ "track_changes": 1
+}

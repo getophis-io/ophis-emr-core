@@ -1,0 +1,150 @@
+{
+ "actions": [],
+ "autoname": "field:din",
+ "creation": "2026-10-10 20:00:00.000000",
+ "description": "The national drug master: marketed human drug products from Health Canada's Drug Product Database. Refreshed by import, not edited.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "din",
+  "brand_name",
+  "generic_name",
+  "strength",
+  "column_break_main",
+  "form",
+  "route",
+  "schedule",
+  "monitored",
+  "company"
+ ],
+ "fields": [
+  {
+   "fieldname": "din",
+   "fieldtype": "Data",
+   "label": "DIN",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "length": 8,
+   "description": "Health Canada Drug Identification Number"
+  },
+  {
+   "fieldname": "brand_name",
+   "fieldtype": "Data",
+   "label": "Brand Name",
+   "reqd": 1,
+   "in_list_view": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "generic_name",
+   "fieldtype": "Data",
+   "label": "Generic Name",
+   "in_list_view": 1,
+   "search_index": 1,
+   "description": "Active ingredients"
+  },
+  {
+   "fieldname": "strength",
+   "fieldtype": "Data",
+   "label": "Strength",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "form",
+   "fieldtype": "Data",
+   "label": "Dosage Form"
+  },
+  {
+   "fieldname": "route",
+   "fieldtype": "Data",
+   "label": "Route"
+  },
+  {
+   "fieldname": "schedule",
+   "fieldtype": "Data",
+   "label": "Schedule",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "monitored",
+   "fieldtype": "Check",
+   "label": "Monitored Drug",
+   "in_standard_filter": 1,
+   "description": "A narcotic, controlled drug or targeted substance under the Controlled Drugs and Substances Act"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Data",
+   "label": "Company"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-10 20:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Drug Product",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "brand_name,generic_name,strength",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "brand_name"
+}

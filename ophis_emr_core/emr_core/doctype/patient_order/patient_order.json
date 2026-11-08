@@ -1,0 +1,245 @@
+{
+ "actions": [],
+ "autoname": "format:ORD-{YYYY}-{#####}",
+ "creation": "2026-10-10 17:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "patient",
+  "patient_name",
+  "order_type",
+  "column_break_main",
+  "status",
+  "order_date",
+  "priority",
+  "details_section",
+  "tests",
+  "fasting",
+  "column_break_details",
+  "clinical_information",
+  "requisition_section",
+  "requisition_form",
+  "other_tests",
+  "column_break_requisition",
+  "selected_tests",
+  "requisition_details",
+  "source_section",
+  "practitioner",
+  "column_break_source",
+  "encounter",
+  "notes_section",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "patient",
+   "fieldtype": "Link",
+   "label": "Patient",
+   "options": "Patient",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "search_index": 1
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Patient Name",
+   "fetch_from": "patient.patient_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "order_type",
+   "fieldtype": "Select",
+   "label": "Order Type",
+   "options": "Blood Work",
+   "default": "Blood Work",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Ordered\nCompleted\nCancelled\nEntered in Error",
+   "default": "Ordered",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "order_date",
+   "fieldtype": "Date",
+   "label": "Order Date",
+   "default": "Today",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "label": "Priority",
+   "options": "Routine\nUrgent",
+   "default": "Routine",
+   "reqd": 1
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Order"
+  },
+  {
+   "fieldname": "tests",
+   "fieldtype": "Small Text",
+   "label": "Tests",
+   "description": "One test per line. Written from the requisition when one is used."
+  },
+  {
+   "fieldname": "fasting",
+   "fieldtype": "Check",
+   "label": "Fasting Required"
+  },
+  {
+   "fieldname": "column_break_details",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "clinical_information",
+   "fieldtype": "Small Text",
+   "label": "Clinical Information",
+   "description": "Diagnosis or reason for the order, for the laboratory"
+  },
+  {
+   "fieldname": "requisition_section",
+   "fieldtype": "Section Break",
+   "label": "Requisition Form",
+   "collapsible": 1
+  },
+  {
+   "fieldname": "requisition_form",
+   "fieldtype": "Data",
+   "label": "Requisition Form",
+   "read_only": 1,
+   "description": "The provincial laboratory requisition this order is written on"
+  },
+  {
+   "fieldname": "other_tests",
+   "fieldtype": "Small Text",
+   "label": "Other Tests",
+   "description": "Tests that are not listed on the requisition, one per line"
+  },
+  {
+   "fieldname": "column_break_requisition",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "selected_tests",
+   "fieldtype": "JSON",
+   "label": "Selected Tests",
+   "read_only": 1
+  },
+  {
+   "fieldname": "requisition_details",
+   "fieldtype": "JSON",
+   "label": "Requisition Details",
+   "read_only": 1
+  },
+  {
+   "fieldname": "source_section",
+   "fieldtype": "Section Break",
+   "label": "Source"
+  },
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Ordered By",
+   "options": "Practitioner",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_source",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "encounter",
+   "fieldtype": "Link",
+   "label": "Encounter",
+   "options": "Encounter",
+   "search_index": 1
+  },
+  {
+   "fieldname": "notes_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-10 18:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Patient Order",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "patient_name,order_date",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "patient_name",
+ "track_changes": 1,
+ "track_views": 1
+}

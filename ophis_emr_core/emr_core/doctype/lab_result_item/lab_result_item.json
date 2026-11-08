@@ -1,0 +1,60 @@
+{
+ "actions": [],
+ "creation": "2026-10-10 19:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "test_name",
+  "value",
+  "units",
+  "reference_range",
+  "flag"
+ ],
+ "fields": [
+  {
+   "fieldname": "test_name",
+   "fieldtype": "Data",
+   "label": "Test",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Data",
+   "label": "Result",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "units",
+   "fieldtype": "Data",
+   "label": "Units",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "reference_range",
+   "fieldtype": "Data",
+   "label": "Reference Range",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "flag",
+   "fieldtype": "Select",
+   "label": "Flag",
+   "options": "\nLow\nHigh\nAbnormal",
+   "in_list_view": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-10 19:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Lab Result Item",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}

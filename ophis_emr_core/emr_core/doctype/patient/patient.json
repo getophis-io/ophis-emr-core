@@ -1,0 +1,539 @@
+{
+ "actions": [],
+ "autoname": "format:PAT-{#####}",
+ "creation": "2026-10-10 11:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "demographics_tab",
+  "first_name",
+  "middle_name",
+  "last_name",
+  "preferred_name",
+  "patient_name",
+  "column_break_demographics",
+  "date_of_birth",
+  "sex",
+  "gender",
+  "pronouns",
+  "preferred_language",
+  "status",
+  "date_of_death",
+  "image",
+  "health_card_section",
+  "health_card_province",
+  "health_card_number",
+  "column_break_health_card",
+  "health_card_version",
+  "health_card_number_index",
+  "health_card_expiry",
+  "health_card_status",
+  "health_card_checked_on",
+  "health_card_response",
+  "care_section",
+  "primary_practitioner",
+  "company",
+  "column_break_care",
+  "enrolment_status",
+  "enrolment_date",
+  "contact_tab",
+  "mobile_phone",
+  "home_phone",
+  "email",
+  "mobile_phone_index",
+  "home_phone_index",
+  "email_index",
+  "preferred_contact_method",
+  "column_break_contact",
+  "address_line1",
+  "address_line2",
+  "city",
+  "province",
+  "postal_code",
+  "emergency_contacts_section",
+  "emergency_contacts",
+  "pharmacy_section",
+  "pharmacy_name",
+  "pharmacy_address",
+  "column_break_pharmacy",
+  "pharmacy_phone",
+  "pharmacy_fax",
+  "pharmacy_email",
+  "chart_tab",
+  "chart_summary_html"
+ ],
+ "fields": [
+  {
+   "fieldname": "demographics_tab",
+   "fieldtype": "Tab Break",
+   "label": "Demographics"
+  },
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "middle_name",
+   "fieldtype": "Data",
+   "label": "Middle Name"
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "preferred_name",
+   "fieldtype": "Data",
+   "label": "Preferred Name"
+  },
+  {
+   "fieldname": "patient_name",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_global_search": 1
+  },
+  {
+   "fieldname": "column_break_demographics",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_of_birth",
+   "fieldtype": "Date",
+   "label": "Date of Birth",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "sex",
+   "fieldtype": "Select",
+   "label": "Sex",
+   "options": "\nFemale\nMale\nIntersex\nUnknown",
+   "reqd": 1
+  },
+  {
+   "fieldname": "gender",
+   "fieldtype": "Select",
+   "label": "Gender",
+   "options": "\nWoman\nMan\nNon-binary\nTwo-Spirit\nAnother Gender\nPrefer Not to Say",
+   "description": "Gender identity, recorded separately from sex"
+  },
+  {
+   "fieldname": "pronouns",
+   "fieldtype": "Data",
+   "label": "Pronouns",
+   "length": 40
+  },
+  {
+   "fieldname": "preferred_language",
+   "fieldtype": "Select",
+   "label": "Preferred Language",
+   "options": "English\nFrench\nOther",
+   "default": "English"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nInactive\nDeceased",
+   "default": "Active",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "date_of_death",
+   "fieldtype": "Date",
+   "label": "Date of Death",
+   "depends_on": "eval:doc.status == 'Deceased'"
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Photo",
+   "hidden": 1
+  },
+  {
+   "fieldname": "health_card_section",
+   "fieldtype": "Section Break",
+   "label": "Health Card"
+  },
+  {
+   "fieldname": "health_card_province",
+   "fieldtype": "Select",
+   "label": "Issuing Province",
+   "options": "\nAB\nBC\nMB\nNB\nNL\nNS\nNT\nNU\nON\nPE\nQC\nSK\nYT",
+   "default": "ON",
+   "description": "Leave the number blank for uninsured or out-of-country patients"
+  },
+  {
+   "fieldname": "health_card_number",
+   "fieldtype": "Data",
+   "label": "Health Card Number",
+   "length": 255
+  },
+  {
+   "fieldname": "column_break_health_card",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "health_card_version",
+   "fieldtype": "Data",
+   "label": "Version Code",
+   "length": 255
+  },
+  {
+   "fieldname": "health_card_number_index",
+   "fieldtype": "Data",
+   "label": "Health Card Number Index",
+   "description": "Blind index for exact lookups; the value itself is stored encrypted.",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1,
+   "search_index": 1,
+   "length": 64
+  },
+  {
+   "fieldname": "health_card_expiry",
+   "fieldtype": "Data",
+   "label": "Expiry Date",
+   "length": 255,
+   "description": "YYYY-MM-DD. Stored encrypted, so kept as text."
+  },
+  {
+   "fieldname": "health_card_status",
+   "fieldtype": "Select",
+   "label": "Validation Status",
+   "options": "Not Checked\nValid\nInvalid",
+   "default": "Not Checked",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "health_card_checked_on",
+   "fieldtype": "Datetime",
+   "label": "Last Validated On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "health_card_response",
+   "fieldtype": "Data",
+   "label": "Validation Response",
+   "read_only": 1
+  },
+  {
+   "fieldname": "care_section",
+   "fieldtype": "Section Break",
+   "label": "Care Team"
+  },
+  {
+   "fieldname": "primary_practitioner",
+   "fieldtype": "Link",
+   "label": "Primary Practitioner",
+   "options": "Practitioner",
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Clinic",
+   "options": "Company"
+  },
+  {
+   "fieldname": "column_break_care",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "enrolment_status",
+   "fieldtype": "Select",
+   "label": "Enrolment Status",
+   "options": "Not Rostered\nRostered\nTerminated",
+   "default": "Not Rostered"
+  },
+  {
+   "fieldname": "enrolment_date",
+   "fieldtype": "Date",
+   "label": "Enrolment Date",
+   "depends_on": "eval:doc.enrolment_status != 'Not Rostered'"
+  },
+  {
+   "fieldname": "contact_tab",
+   "fieldtype": "Tab Break",
+   "label": "Contact"
+  },
+  {
+   "fieldname": "mobile_phone",
+   "fieldtype": "Data",
+   "label": "Mobile Phone",
+   "options": "Phone",
+   "length": 255
+  },
+  {
+   "fieldname": "home_phone",
+   "fieldtype": "Data",
+   "label": "Home Phone",
+   "options": "Phone",
+   "length": 255
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
+   "length": 255
+  },
+  {
+   "fieldname": "mobile_phone_index",
+   "fieldtype": "Data",
+   "label": "Mobile Phone Index",
+   "description": "Blind index for exact lookups; the value itself is stored encrypted.",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1,
+   "search_index": 1,
+   "length": 64
+  },
+  {
+   "fieldname": "home_phone_index",
+   "fieldtype": "Data",
+   "label": "Home Phone Index",
+   "description": "Blind index for exact lookups; the value itself is stored encrypted.",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1,
+   "search_index": 1,
+   "length": 64
+  },
+  {
+   "fieldname": "email_index",
+   "fieldtype": "Data",
+   "label": "Email Index",
+   "description": "Blind index for exact lookups; the value itself is stored encrypted.",
+   "hidden": 1,
+   "read_only": 1,
+   "no_copy": 1,
+   "print_hide": 1,
+   "report_hide": 1,
+   "search_index": 1,
+   "length": 64
+  },
+  {
+   "fieldname": "preferred_contact_method",
+   "fieldtype": "Select",
+   "label": "Preferred Contact Method",
+   "options": "\nMobile Phone\nHome Phone\nEmail"
+  },
+  {
+   "fieldname": "column_break_contact",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "address_line1",
+   "fieldtype": "Data",
+   "label": "Address Line 1"
+  },
+  {
+   "fieldname": "address_line2",
+   "fieldtype": "Data",
+   "label": "Address Line 2"
+  },
+  {
+   "fieldname": "city",
+   "fieldtype": "Data",
+   "label": "City"
+  },
+  {
+   "fieldname": "province",
+   "fieldtype": "Select",
+   "label": "Province",
+   "options": "\nAB\nBC\nMB\nNB\nNL\nNS\nNT\nNU\nON\nPE\nQC\nSK\nYT",
+   "default": "ON"
+  },
+  {
+   "fieldname": "postal_code",
+   "fieldtype": "Data",
+   "label": "Postal Code",
+   "length": 7
+  },
+  {
+   "fieldname": "emergency_contacts_section",
+   "fieldtype": "Section Break",
+   "label": "Emergency Contacts"
+  },
+  {
+   "fieldname": "emergency_contacts",
+   "fieldtype": "Table",
+   "label": "Emergency Contacts",
+   "options": "Patient Emergency Contact"
+  },
+  {
+   "fieldname": "pharmacy_section",
+   "fieldtype": "Section Break",
+   "label": "Preferred Pharmacy"
+  },
+  {
+   "fieldname": "pharmacy_name",
+   "fieldtype": "Data",
+   "label": "Pharmacy"
+  },
+  {
+   "fieldname": "pharmacy_address",
+   "fieldtype": "Small Text",
+   "label": "Address"
+  },
+  {
+   "fieldname": "column_break_pharmacy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "pharmacy_phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "pharmacy_fax",
+   "fieldtype": "Data",
+   "label": "Fax",
+   "options": "Phone"
+  },
+  {
+   "fieldname": "pharmacy_email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
+  },
+  {
+   "fieldname": "chart_tab",
+   "fieldtype": "Tab Break",
+   "label": "Chart"
+  },
+  {
+   "fieldname": "chart_summary_html",
+   "fieldtype": "HTML",
+   "label": "Chart Summary"
+  }
+ ],
+ "image_field": "image",
+ "index_web_pages_for_search": 0,
+ "links": [
+  {
+   "link_doctype": "Patient Appointment",
+   "link_fieldname": "patient",
+   "group": "Visits"
+  },
+  {
+   "link_doctype": "Encounter",
+   "link_fieldname": "patient",
+   "group": "Visits"
+  },
+  {
+   "link_doctype": "Clinical Note",
+   "link_fieldname": "patient",
+   "group": "Visits"
+  },
+  {
+   "link_doctype": "Patient Condition",
+   "link_fieldname": "patient",
+   "group": "Chart"
+  },
+  {
+   "link_doctype": "Patient Allergy",
+   "link_fieldname": "patient",
+   "group": "Chart"
+  },
+  {
+   "link_doctype": "Patient Medication",
+   "link_fieldname": "patient",
+   "group": "Chart"
+  },
+  {
+   "link_doctype": "Vital Signs",
+   "link_fieldname": "patient",
+   "group": "Chart"
+  }
+ ],
+ "modified": "2026-10-15 16:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Patient",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1,
+   "create": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "email": 1,
+   "export": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "patient_name,date_of_birth",
+ "show_title_field_in_link": 1,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "patient_name",
+ "track_changes": 1,
+ "track_views": 1
+}

@@ -1,0 +1,212 @@
+{
+ "actions": [],
+ "autoname": "field:room_name",
+ "creation": "2026-10-15 18:00:00.000000",
+ "description": "A room patients are seen in, with what it is equipped with. Occupied while a visit in it is in progress.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "room_name",
+  "room_type",
+  "column_break_room",
+  "status",
+  "description",
+  "facilities_section",
+  "exam_table",
+  "exam_light",
+  "diagnostic_set",
+  "bp_monitor",
+  "thermometer",
+  "pulse_oximeter",
+  "weight_scale",
+  "stadiometer",
+  "column_break_facilities",
+  "glucometer",
+  "ecg_machine",
+  "spirometer",
+  "peak_flow_meter",
+  "vision_chart",
+  "doppler",
+  "sink",
+  "sharps_container"
+ ],
+ "fields": [
+  {
+   "fieldname": "room_name",
+   "fieldtype": "Data",
+   "label": "Room",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "room_type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Exam Room\nProcedure Room\nTriage\nOther",
+   "default": "Exam Room",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_room",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Available\nOccupied\nClosed",
+   "default": "Available",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Occupied while a visit in the room is in progress, and Available again when it ends; that is kept up to date for you. Close a room to take it out of use."
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description"
+  },
+  {
+   "fieldname": "facilities_section",
+   "fieldtype": "Section Break",
+   "label": "Facilities"
+  },
+  {
+   "fieldname": "exam_table",
+   "fieldtype": "Check",
+   "label": "Examination table"
+  },
+  {
+   "fieldname": "exam_light",
+   "fieldtype": "Check",
+   "label": "Examination light"
+  },
+  {
+   "fieldname": "diagnostic_set",
+   "fieldtype": "Check",
+   "label": "Wall diagnostic set (otoscope, ophthalmoscope)"
+  },
+  {
+   "fieldname": "bp_monitor",
+   "fieldtype": "Check",
+   "label": "Blood pressure monitor"
+  },
+  {
+   "fieldname": "thermometer",
+   "fieldtype": "Check",
+   "label": "Thermometer"
+  },
+  {
+   "fieldname": "pulse_oximeter",
+   "fieldtype": "Check",
+   "label": "Pulse oximeter"
+  },
+  {
+   "fieldname": "weight_scale",
+   "fieldtype": "Check",
+   "label": "Weight scale"
+  },
+  {
+   "fieldname": "stadiometer",
+   "fieldtype": "Check",
+   "label": "Height measure (stadiometer)"
+  },
+  {
+   "fieldname": "column_break_facilities",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "glucometer",
+   "fieldtype": "Check",
+   "label": "Glucometer"
+  },
+  {
+   "fieldname": "ecg_machine",
+   "fieldtype": "Check",
+   "label": "ECG machine"
+  },
+  {
+   "fieldname": "spirometer",
+   "fieldtype": "Check",
+   "label": "Spirometer"
+  },
+  {
+   "fieldname": "peak_flow_meter",
+   "fieldtype": "Check",
+   "label": "Peak flow meter"
+  },
+  {
+   "fieldname": "vision_chart",
+   "fieldtype": "Check",
+   "label": "Vision chart"
+  },
+  {
+   "fieldname": "doppler",
+   "fieldtype": "Check",
+   "label": "Doppler (fetal / vascular)"
+  },
+  {
+   "fieldname": "sink",
+   "fieldtype": "Check",
+   "label": "Hand-washing sink"
+  },
+  {
+   "fieldname": "sharps_container",
+   "fieldtype": "Check",
+   "label": "Sharps container"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-10-15 19:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Room",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "write": 1,
+   "create": 1,
+   "export": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "write": 1,
+   "create": 1,
+   "export": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "room_name",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}

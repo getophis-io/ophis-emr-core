@@ -1,0 +1,89 @@
+{
+ "actions": [],
+ "creation": "2026-10-10 11:00:00.000000",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "first_name",
+  "last_name",
+  "contact_name",
+  "relationship",
+  "phone",
+  "email",
+  "address",
+  "is_substitute_decision_maker"
+ ],
+ "fields": [
+  {
+   "fieldname": "first_name",
+   "fieldtype": "Data",
+   "label": "First Name",
+   "reqd": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "last_name",
+   "fieldtype": "Data",
+   "label": "Last Name",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "contact_name",
+   "fieldtype": "Data",
+   "label": "Full Name",
+   "read_only": 1,
+   "description": "Set from the first and last name."
+  },
+  {
+   "fieldname": "relationship",
+   "fieldtype": "Select",
+   "label": "Relationship",
+   "in_list_view": 1,
+   "options": "\nSpouse\nPartner\nParent\nChild\nSibling\nGrandparent\nGrandchild\nOther relative\nGuardian\nCaregiver\nFriend\nNeighbour\nOther"
+  },
+  {
+   "fieldname": "phone",
+   "fieldtype": "Data",
+   "label": "Phone",
+   "options": "Phone",
+   "reqd": 1,
+   "in_list_view": 1,
+   "length": 255,
+   "description": "Stored encrypted."
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email",
+   "length": 255,
+   "description": "Stored encrypted."
+  },
+  {
+   "fieldname": "address",
+   "fieldtype": "Small Text",
+   "label": "Address",
+   "description": "Stored encrypted."
+  },
+  {
+   "fieldname": "is_substitute_decision_maker",
+   "fieldtype": "Check",
+   "label": "Substitute Decision Maker",
+   "in_list_view": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "istable": 1,
+ "links": [],
+ "modified": "2026-10-15 17:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Patient Emergency Contact",
+ "owner": "Administrator",
+ "permissions": [],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
