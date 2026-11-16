@@ -1,0 +1,164 @@
+{
+ "actions": [],
+ "allow_rename": 0,
+ "autoname": "field:clinic_name",
+ "creation": "2026-11-16 09:00:00.000000",
+ "description": "A clinic: one ERPNext Branch of a Company, with what the clinical record needs to know about it. Saving a clinic creates its Branch.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "clinic_name",
+  "branch",
+  "company",
+  "column_break_clinic",
+  "province",
+  "time_zone",
+  "holiday_list",
+  "disabled"
+ ],
+ "fields": [
+  {
+   "fieldname": "clinic_name",
+   "fieldtype": "Data",
+   "label": "Clinic",
+   "reqd": 1,
+   "unique": 1,
+   "in_list_view": 1,
+   "description": "Also the name of the clinic's Branch"
+  },
+  {
+   "fieldname": "branch",
+   "fieldtype": "Link",
+   "label": "Branch",
+   "options": "Branch",
+   "read_only": 1,
+   "unique": 1,
+   "description": "Created with the clinic. Staff are assigned to the clinic through this Branch."
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Company",
+   "options": "Company",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "column_break_clinic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "province",
+   "fieldtype": "Select",
+   "label": "Province",
+   "options": "AB\nBC\nMB\nNB\nNL\nNS\nNT\nNU\nON\nPE\nQC\nSK\nYT",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "Decides the health system the clinic works in: payers, billing numbers, requisitions and integrations"
+  },
+  {
+   "fieldname": "time_zone",
+   "fieldtype": "Data",
+   "label": "Time Zone",
+   "description": "An IANA time zone such as America/Toronto. Left blank, the province's main time zone."
+  },
+  {
+   "fieldname": "holiday_list",
+   "fieldtype": "Link",
+   "label": "Holiday List",
+   "options": "Holiday List",
+   "description": "Days the clinic is closed, such as the province's statutory holidays"
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [
+  {
+   "link_doctype": "Patient Clinic",
+   "link_fieldname": "clinic",
+   "group": "People"
+  },
+  {
+   "link_doctype": "Practitioner Clinic",
+   "link_fieldname": "clinic",
+   "group": "People"
+  },
+  {
+   "link_doctype": "Employee Clinic",
+   "link_fieldname": "clinic",
+   "group": "People"
+  },
+  {
+   "link_doctype": "Room",
+   "link_fieldname": "clinic",
+   "group": "Clinic"
+  },
+  {
+   "link_doctype": "Patient Appointment",
+   "link_fieldname": "clinic",
+   "group": "Visits"
+  },
+  {
+   "link_doctype": "Encounter",
+   "link_fieldname": "clinic",
+   "group": "Visits"
+  }
+ ],
+ "modified": "2026-11-16 13:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Clinic",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "write": 1,
+   "create": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "write": 1,
+   "create": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "clinic_name",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "clinic_name",
+ "track_changes": 1
+}

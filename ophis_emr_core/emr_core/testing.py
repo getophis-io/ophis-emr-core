@@ -22,7 +22,9 @@ def make_user(email: str, roles: tuple[str, ...], first_name: str = "Test") -> s
 	return email
 
 
-def make_practitioner(user: str | None = None, **kwargs):
+def make_practitioner(user: str | None = None, clinic: str | None = None, billing: dict | None = None, **kwargs):
+	"""A practitioner at `clinic` (or the user's own), billing the clinic's province with
+	`billing`, province-wide values such as {"billing_number": ..., "specialty_code": ...}."""
 	values = {
 		"doctype": "Practitioner",
 		"first_name": "Test",
@@ -31,10 +33,18 @@ def make_practitioner(user: str | None = None, **kwargs):
 		"user": user,
 	}
 	values.update(kwargs)
-	return frappe.get_doc(values).insert(ignore_permissions=True)
+	doc = frappe.get_doc(values)
+	doc.flags.clinic = clinic
+	doc.insert(ignore_permissions=True)
+	if billing:
+		from ophis_emr_core.emr_core import billing_profiles, clinics
+
+		province = frappe.db.get_value("Clinic", clinics.get_primary_clinic("Practitioner", doc.name), "province")
+		billing_profiles.set_values(doc.name, province, billing)
+	return doc
 
 
-def make_patient(**kwargs):
+def make_patient(clinic: str | None = None, **kwargs):
 	values = {
 		"doctype": "Patient",
 		"first_name": "Test",
@@ -45,7 +55,9 @@ def make_patient(**kwargs):
 		"health_card_number": make_health_card_number(),
 	}
 	values.update(kwargs)
-	return frappe.get_doc(values).insert(ignore_permissions=True)
+	doc = frappe.get_doc(values)
+	doc.flags.clinic = clinic
+	return doc.insert(ignore_permissions=True)
 
 
 def make_appointment(patient: str, practitioner: str, **kwargs):
@@ -64,7 +76,22 @@ def make_appointment(patient: str, practitioner: str, **kwargs):
 	return frappe.get_doc(values).insert(ignore_permissions=True)
 
 
-def make_room(**kwargs):
-	values = {"doctype": "Room", "room_name": f"Room {frappe.generate_hash(length=6)}"}
+def make_room(clinic: str | None = None, **kwargs):
+	"""A room at `clinic`, or the user's own clinic."""
+	from ophis_emr_core.emr_core.clinics import get_default_clinic
+
+	values = {"doctype": "Room", "room_name": f"Room {frappe.generate_hash(length=6)}", "clinic": clinic or get_default_clinic()}
+	values.update(kwargs)
+	return frappe.get_doc(values).insert(ignore_permissions=True)
+
+
+def make_clinic(**kwargs):
+	"""A clinic, and so a Branch, of an existing company."""
+	values = {
+		"doctype": "Clinic",
+		"clinic_name": f"Clinic {frappe.generate_hash(length=6)}",
+		"company": frappe.defaults.get_global_default("company") or frappe.db.get_value("Company", {}, "name"),
+		"province": "ON",
+	}
 	values.update(kwargs)
 	return frappe.get_doc(values).insert(ignore_permissions=True)

@@ -1,22 +1,25 @@
 import frappe
-from frappe import _
 from frappe.model.document import Document
+
+from ophis_emr_core.emr_core import billing_profiles, clinics
 
 
 class Practitioner(Document):
+	"""A clinician. The clinics they work at are on `Practitioner Clinic`, and what they bill each
+	province with on their `Practitioner Billing Profile` for it. A new practitioner joins
+	`flags.clinic`, or the user's own clinic."""
+
 	def validate(self):
 		self.practitioner_name = " ".join(filter(None, [self.first_name, self.last_name]))
-		self.validate_ohip_numbers()
+		if self.is_new():
+			clinics.check_clinic_can_be_found(self)
 		# Only someone who is practising takes on new patients.
 		if self.status != "Active":
 			self.accepting_patients = 0
 
-	def validate_ohip_numbers(self):
-		if self.ohip_billing_number and not (
-			self.ohip_billing_number.isdigit() and len(self.ohip_billing_number) == 6
-		):
-			frappe.throw(_("OHIP Billing Number must be 6 digits."))
-		if self.ohip_specialty_code and not (
-			self.ohip_specialty_code.isdigit() and len(self.ohip_specialty_code) == 2
-		):
-			frappe.throw(_("OHIP Specialty Code must be 2 digits."))
+	def after_insert(self):
+		clinics.link_new_record(self)
+
+	def on_trash(self):
+		clinics.delete_links(self)
+		billing_profiles.delete_profiles(self.name)

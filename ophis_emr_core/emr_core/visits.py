@@ -40,8 +40,10 @@ def can_walk_in() -> bool:
 	return frappe.has_permission("Patient Appointment", "write") or frappe.has_permission("Encounter", "create")
 
 
-def walk_in(patient: str, reason_for_visit: str | None = None):
+def walk_in(patient: str, reason_for_visit: str | None = None, clinic: str | None = None):
 	"""Check in a patient who has come without an appointment. Returns the encounter opened.
+
+	The visit is at `clinic`, or the clinic of the user checking them in.
 
 	A walk-in waits for the first nurse free, with no practitioner: at hand-over, or before, any
 	physician can take it. A patient is checked in once a day at most.
@@ -62,6 +64,7 @@ def walk_in(patient: str, reason_for_visit: str | None = None):
 		{
 			"doctype": "Encounter",
 			"patient": patient,
+			"clinic": clinic,
 			"visit_type": WALK_IN,
 			"encounter_type": "In-person Walk-in",
 			"encounter_date": now_datetime(),
@@ -73,7 +76,9 @@ def walk_in(patient: str, reason_for_visit: str | None = None):
 	return encounter
 
 
-def register_walk_in(values: dict, reason_for_visit: str | None = None, allow_duplicate: bool = False) -> dict:
+def register_walk_in(
+	values: dict, reason_for_visit: str | None = None, allow_duplicate: bool = False, clinic: str | None = None
+) -> dict:
 	"""Register someone who has walked in without being a patient yet, and check them in.
 
 	They are registered Not Rostered: a walk-in patient, until they are rostered with a
@@ -93,10 +98,12 @@ def register_walk_in(values: dict, reason_for_visit: str | None = None, allow_du
 		if duplicates:
 			return {"possible_duplicates": phi.decrypt_rows("Patient", duplicates)}
 
-	patient = frappe.get_doc({"doctype": "Patient", **registration, "enrolment_status": "Not Rostered"}).insert()
+	patient = frappe.get_doc({"doctype": "Patient", **registration, "enrolment_status": "Not Rostered"})
+	patient.flags.clinic = clinic
+	patient.insert()
 	# The controller's own duplicate warning is a desk message; they were offered above instead.
 	frappe.clear_messages()
-	return {"patient": patient.name, "encounter": walk_in(patient.name, reason_for_visit).name}
+	return {"patient": patient.name, "encounter": walk_in(patient.name, reason_for_visit, clinic).name}
 
 
 def can_pick_up(stage: str | None) -> bool:
