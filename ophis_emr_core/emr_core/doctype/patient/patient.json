@@ -243,8 +243,10 @@
   {
    "fieldname": "company",
    "fieldtype": "Link",
-   "label": "Clinic",
-   "options": "Company"
+   "label": "Company",
+   "options": "Company",
+   "read_only": 1,
+   "description": "The company of the patient's primary clinic. The patient's clinics are on Patient Clinic."
   },
   {
    "fieldname": "column_break_care",
@@ -462,9 +464,14 @@
    "link_doctype": "Vital Signs",
    "link_fieldname": "patient",
    "group": "Chart"
+  },
+  {
+   "link_doctype": "Patient Clinic",
+   "link_fieldname": "patient",
+   "group": "Clinics"
   }
  ],
- "modified": "2026-10-15 16:00:00.000000",
+ "modified": "2026-11-16 13:00:00.000000",
  "modified_by": "Administrator",
  "module": "EMR Core",
  "name": "Patient",

@@ -9,6 +9,8 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
+from ophis_emr_core.emr_core import billing_profiles
+
 CHECKED = "/Yes"
 # The hematology, immunology and microbiology checkboxes all use this state name on the template.
 COLUMN_2 = "/fasting"
@@ -204,7 +206,7 @@ def get_field_values(order) -> tuple[dict, dict]:
 	text = {
 		"name": practitioner.practitioner_name or "",
 		"address": get_clinic_address(practitioner.company or patient.company),
-		"ClinicianPractitioner Number": practitioner.ohip_billing_number or "",
+		"ClinicianPractitioner Number": get_billing_number(order.practitioner),
 		"CPSO  Registration No": practitioner.college_registration_number or "",
 		"contactNumber1": practitioner.phone or "",
 		"Additional Clinical Information eg diagnosis": order.clinical_information or "",
@@ -247,6 +249,11 @@ def get_field_values(order) -> tuple[dict, dict]:
 	for code in selected:
 		buttons.update(tests[code]["buttons"])
 	return text, buttons
+
+
+def get_billing_number(practitioner: str | None) -> str:
+	"""The practitioner's OHIP billing number, from their Ontario billing profile."""
+	return (practitioner and billing_profiles.get_value(practitioner, "billing_number", province="ON")) or ""
 
 
 def get_clinic_address(company: str | None) -> str:

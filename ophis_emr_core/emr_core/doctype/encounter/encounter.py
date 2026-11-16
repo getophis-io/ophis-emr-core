@@ -4,6 +4,7 @@ from frappe.model.document import Document
 from frappe.utils import get_fullname, now_datetime
 
 from ophis_emr_core.emr_core import notify
+from ophis_emr_core.emr_core import clinics
 from ophis_emr_core.emr_core.rooms import refresh_status
 
 # Who has the patient. A visit opened when the patient checks in waits for a nurse; the nurse
@@ -31,9 +32,28 @@ class RoomOccupiedError(frappe.ValidationError):
 
 class Encounter(Document):
 	def validate(self):
+		self.validate_clinic()
 		self.validate_appointment()
 		self.validate_practitioner()
 		self.validate_room()
+
+	def validate_clinic(self):
+		"""A visit happens at one clinic: its appointment's, or for a walk-in the clinic checking
+		them in. Its practitioner works there and its room is there."""
+		booked_at = frappe.db.get_value("Patient Appointment", self.appointment, "clinic") if self.appointment else None
+		clinics.require_clinic(self, booked_at, self.practitioner and clinics.get_primary_clinic("Practitioner", self.practitioner))
+		if booked_at and booked_at != self.clinic:
+			frappe.throw(_("The visit is at {0}, where appointment {1} is booked.").format(booked_at, self.appointment))
+		clinics.check_not_moved(self)
+		if self.is_new():
+			clinics.check_clinic_open(self.clinic)
+		if self.is_new() or self.has_value_changed("practitioner"):
+			clinics.check_works_at(self.practitioner, self.clinic)
+		if self.room and frappe.db.get_value("Room", self.room, "clinic") != self.clinic:
+			frappe.throw(_("{0} is not a room at {1}.").format(self.room, self.clinic))
+
+	def after_insert(self):
+		clinics.ensure_patient_at(self.patient, self.clinic)
 
 	def validate_practitioner(self):
 		if not self.practitioner and self.visit_type != WALK_IN:

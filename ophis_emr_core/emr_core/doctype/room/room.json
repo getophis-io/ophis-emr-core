@@ -1,12 +1,13 @@
 {
  "actions": [],
- "autoname": "field:room_name",
+ "autoname": "",
  "creation": "2026-10-15 18:00:00.000000",
- "description": "A room patients are seen in, with what it is equipped with. Occupied while a visit in it is in progress.",
+ "description": "A room in a clinic that patients are seen in, with what it is equipped with. Occupied while a visit in it is in progress.",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
   "room_name",
+  "clinic",
   "room_type",
   "column_break_room",
   "status",
@@ -36,8 +37,20 @@
    "fieldtype": "Data",
    "label": "Room",
    "reqd": 1,
-   "unique": 1,
-   "in_list_view": 1
+   "in_list_view": 1,
+   "description": "Unique within its clinic"
+  },
+  {
+   "fieldname": "clinic",
+   "fieldtype": "Link",
+   "label": "Clinic",
+   "options": "Clinic",
+   "reqd": 1,
+   "search_index": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The clinic the room is in. A room stays in its clinic.",
+   "set_only_once": 1
   },
   {
    "fieldname": "room_type",
@@ -158,11 +171,11 @@
  ],
  "index_web_pages_for_search": 0,
  "links": [],
- "modified": "2026-10-15 19:00:00.000000",
+ "modified": "2026-11-16 11:00:00.000000",
  "modified_by": "Administrator",
  "module": "EMR Core",
  "name": "Room",
- "naming_rule": "By fieldname",
+ "naming_rule": "By script",
  "owner": "Administrator",
  "permissions": [
   {
@@ -208,5 +221,7 @@
  "sort_field": "room_name",
  "sort_order": "ASC",
  "states": [],
- "track_changes": 1
+ "track_changes": 1,
+ "title_field": "room_name",
+ "show_title_field_in_link": 1
 }

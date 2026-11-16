@@ -16,7 +16,7 @@ import time
 import frappe
 from frappe import _
 
-from ophis_emr_core.emr_core.requisitions import get_clinic_province
+from ophis_emr_core.emr_core.provinces import get_clinic_province
 
 
 class IntegrationError(frappe.ValidationError):

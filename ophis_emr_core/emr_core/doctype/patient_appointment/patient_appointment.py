@@ -3,6 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import add_to_date, cint, get_datetime, get_link_to_form, now_datetime
 
+from ophis_emr_core.emr_core import clinics
+
 # Appointments in these states no longer hold the practitioner's time.
 RELEASED_STATUSES = ("Cancelled", "No Show")
 
@@ -21,6 +23,7 @@ class NotRosteredError(frappe.ValidationError):
 
 class PatientAppointment(Document):
 	def validate(self):
+		self.validate_clinic()
 		self.set_duration()
 		self.set_time_range()
 		self.validate_practitioner()
@@ -41,6 +44,27 @@ class PatientAppointment(Document):
 	def set_time_range(self):
 		self.starts_on = get_datetime(f"{self.appointment_date} {self.start_time}")
 		self.ends_on = add_to_date(self.starts_on, minutes=cint(self.duration))
+
+	def validate_clinic(self):
+		"""An appointment is at one clinic, where its practitioner works: the user's own clinic if
+		the practitioner works there, else the practitioner's primary clinic."""
+		own = clinics.get_default_clinic()
+		clinics.require_clinic(
+			self,
+			own if own and clinics.works_at(self.practitioner, own) else None,
+			clinics.get_primary_clinic("Practitioner", self.practitioner),
+		)
+		moved = not self.is_new() and self.has_value_changed("clinic")
+		if moved and (self.encounter or self.status != "Scheduled"):
+			frappe.throw(_("Only a scheduled appointment can move to another clinic."))
+		if self.is_new() or moved:
+			clinics.check_clinic_open(self.clinic)
+		if self.is_new() or moved or self.has_value_changed("practitioner"):
+			clinics.check_works_at(self.practitioner, self.clinic)
+		self.company = frappe.db.get_value("Clinic", self.clinic, "company")
+
+	def on_update(self):
+		clinics.ensure_patient_at(self.patient, self.clinic)
 
 	def validate_practitioner(self):
 		if frappe.db.get_value("Practitioner", self.practitioner, "status") != "Active":
@@ -153,6 +177,7 @@ class PatientAppointment(Document):
 				"patient": self.patient,
 				"practitioner": self.practitioner,
 				"appointment": self.name,
+				"clinic": self.clinic,
 				"encounter_type": ENCOUNTER_TYPES.get(self.appointment_type, "In-person Appointment"),
 				"visit_type": self.visit_type,
 				"reason_for_visit": self.reason_for_visit,

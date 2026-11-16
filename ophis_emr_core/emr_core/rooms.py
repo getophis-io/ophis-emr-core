@@ -1,4 +1,4 @@
-"""The clinic's rooms, and which are taken.
+"""Each clinic's rooms, and which are taken.
 
 A room is occupied while an encounter in it is in progress. That is read from the encounters
 whenever it matters, and copied to the room's status as encounters change, so the status on
@@ -16,32 +16,45 @@ def get_facilities() -> list[dict]:
 	return [{"fieldname": df.fieldname, "label": df.label} for df in frappe.get_meta("Room").fields if df.fieldtype == "Check"]
 
 
-def get_occupants() -> dict:
-	"""{room: the encounter in progress there}."""
+def get_occupants(clinic: str | None = None) -> dict:
+	"""{room: the encounter in progress there}, at one clinic or all of them."""
+	filters = {"status": "In Progress", "room": ("is", "set")}
+	if clinic:
+		filters["clinic"] = clinic
 	return {
 		row.room: row
 		for row in frappe.get_all(
 			"Encounter",
-			filters={"status": "In Progress", "room": ("is", "set")},
+			filters=filters,
 			fields=["name", "room", "patient", "patient_name", "practitioner", "stage", "nurse", "visit_type", "picked_up_on", "encounter_date"],
 		)
 	}
 
 
-def get_free_rooms(encounter: str | None = None) -> list[dict]:
-	"""Rooms open and not occupied, with the room `encounter` is already in, if any. Each carries
-	the labels of its facilities, to help choose."""
-	occupants = get_occupants()
+def get_free_rooms(encounter: str | None = None, clinic: str | None = None) -> list[dict]:
+	"""Rooms of a clinic open and not occupied, with the room `encounter` is already in, if any.
+
+	The clinic is `encounter`'s when one is given. Each room carries the labels of its
+	facilities, to help choose, and `room_name` to show.
+	"""
+	if encounter and not clinic:
+		clinic = frappe.db.get_value("Encounter", encounter, "clinic")
+	occupants = get_occupants(clinic)
 	facilities = get_facilities()
+	filters = {"status": ("!=", CLOSED)}
+	if clinic:
+		filters["clinic"] = clinic
 	rooms = frappe.get_all(
 		"Room",
-		filters={"status": ("!=", CLOSED)},
-		fields=["name", "room_type", *[facility["fieldname"] for facility in facilities]],
-		order_by="name asc",
+		filters=filters,
+		fields=["name", "room_name", "clinic", "room_type", *[facility["fieldname"] for facility in facilities]],
+		order_by="room_name asc",
 	)
 	return [
 		{
 			"name": room.name,
+			"room_name": room.room_name,
+			"clinic": room.clinic,
 			"room_type": room.room_type,
 			"facilities": [facility["label"] for facility in facilities if room.get(facility["fieldname"])],
 		}

@@ -22,6 +22,7 @@ from frappe import _
 from pypdf import PdfReader, PdfWriter
 from pypdf.generic import NameObject, NumberObject
 
+from ophis_emr_core.emr_core.provinces import get_clinic_province
 from ophis_emr_core.emr_core.requisitions import ontario
 
 FORMS = {"ON": ontario}
@@ -32,14 +33,6 @@ TEMPLATES = os.path.join(os.path.dirname(__file__), "templates")
 READ_ONLY = 1
 PUSH_BUTTON = 1 << 16
 HIDDEN = 2
-
-
-def get_clinic_province() -> str:
-	"""The province the clinic operates in, which decides the requisition form used.
-
-	Set `clinic_province` in the site config for a clinic outside Ontario.
-	"""
-	return frappe.conf.get("clinic_province") or "ON"
 
 
 def get_form_module(code: str | None = None):

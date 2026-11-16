@@ -11,6 +11,10 @@ before_install = "ophis_emr_core.install.before_install"
 after_install = "ophis_emr_core.install.after_install"
 before_migrate = "ophis_emr_core.install.before_migrate"
 after_migrate = "ophis_emr_core.install.after_migrate"
+setup_wizard_complete = "ophis_emr_core.install.after_setup_wizard"
+
+# The clinics an employee works at, on the Employee form (Employee belongs to ERPNext).
+override_doctype_dashboards = {"Employee": "ophis_emr_core.emr_core.dashboards.employee"}
 
 doc_events = {
 	# The patient changelog. The handlers ignore documents that do not belong to a patient.
@@ -22,6 +26,12 @@ doc_events = {
 	},
 	# Encrypted patient identifiers are recorded as changed, never with their values.
 	"Version": {"before_insert": "ophis_emr_core.emr_core.phi.redact_version"},
+	# An employee belongs to the clinic that is their Branch, and takes their clinic links with them.
+	"Employee": {
+		"after_insert": "ophis_emr_core.emr_core.clinics.on_employee_update",
+		"on_update": "ophis_emr_core.emr_core.clinics.on_employee_update",
+		"on_trash": "ophis_emr_core.emr_core.clinics.delete_links",
+	},
 }
 
 # Hooks this app asks other apps (see the README):

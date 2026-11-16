@@ -8,13 +8,15 @@ Guidance for AI coding agents working in this repo (Claude Code, Codex, Cursor, 
 for Canadian (Ontario-first) family practice on ERPNext: DocTypes, their rules, patient identifier
 encryption and provincial plug-ins. No user interface. POC stage. Licensed AGPL-3.0-or-later.
 
-CanChart (`strmlne_emr`, in `../../emr.git`) is the app built on it: screens, the SPA, the desk
-forms for these DocTypes, staff notifications through Raven, the time clock. CanChart imports this
-app; this app never imports CanChart or any other app built on it.
+Apps are built on it: they supply the screens, the desk forms for these DocTypes, staff
+notifications and the like. They import this app; this app never imports any app built on it.
 
 - `ophis_emr_core/hooks.py` — app manifest; the patient changelog and Version redaction hooks.
 - `ophis_emr_core/install.py` — roles and starting records (appointment types, rooms), on install and migrate.
-- `ophis_emr_core/emr_core/` — the only module (`EMR Core`). DocTypes, `validators.py` (health card,
+- `ophis_emr_core/emr_core/` — the only module (`EMR Core`). DocTypes, `provinces/` (a clinic's
+  province: a clinic is a `Branch` with a `Clinic` record), `clinics.py` (which clinics a patient,
+  practitioner or employee belongs to), `billing_profiles.py` (a practitioner's billing values per
+  province; each province's keys are in `provinces/<province>.py`), `validators.py` (health card,
   postal code), `phi.py` (encryption), `events.py` (patient changelog), `rooms.py` (occupancy),
   `chart.py` (chart summary and shared checks), `notify.py` (staff notification hooks),
   `scheduling.py` (working hours, open times), `availability.py` (who is in now), `visits.py`
@@ -33,7 +35,7 @@ app; this app never imports CanChart or any other app built on it.
   (`emr_notify_visit`, `emr_notify`) and `phi.encrypted_fields` does (`phi_encrypted_fields`).
   Document every hook the core asks in the README.
 - **Own clinical DocTypes only.** No Frappe Health / Marley. From ERPNext use standard DocTypes only;
-  do not add custom fields to them.
+  do not add custom fields to them. A clinic is a `Branch`; what Branch lacks goes on `Clinic`.
 - **Canada only.** Country, currency and regional data are fixed to Canada.
 - **DocType names are public.** Apps and existing sites depend on them; renaming one needs a patch
   and a note in the README. ERPNext already owns `Appointment`, `Task` and others: check before naming one.
@@ -57,7 +59,8 @@ app; this app never imports CanChart or any other app built on it.
 ## Local dev
 
 Run it through the `cemr-bench` stack (`../../cemr-bench`), which mounts this repo at
-`/workspace/ophis-emr-core` and links it into the bench as `apps/ophis_emr_core`. From there:
+`/workspace/ophis_emr_core` and links it into the bench as `apps/ophis_emr_core` in place of the
+GitHub clone, so changes here reach the bench without a push. From there:
 
 ```
 docker compose exec -w /home/frappe/frappe-bench frappe bench --site emr.localhost migrate

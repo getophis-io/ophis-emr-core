@@ -1,0 +1,123 @@
+{
+ "actions": [],
+ "autoname": "format:{practitioner}-{province}",
+ "creation": "2026-11-16 12:00:00.000000",
+ "description": "What a practitioner bills one province's plan with: one profile per practitioner and province, its values as key and value rows.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "practitioner",
+  "practitioner_name",
+  "column_break_profile",
+  "province",
+  "status",
+  "values_section",
+  "billing_values"
+ ],
+ "fields": [
+  {
+   "fieldname": "practitioner",
+   "fieldtype": "Link",
+   "label": "Practitioner",
+   "options": "Practitioner",
+   "reqd": 1,
+   "set_only_once": 1,
+   "search_index": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "practitioner_name",
+   "fieldtype": "Data",
+   "label": "Practitioner Name",
+   "fetch_from": "practitioner.practitioner_name",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_profile",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "province",
+   "fieldtype": "Select",
+   "label": "Province",
+   "options": "AB\nBC\nMB\nNB\nNL\nNS\nNT\nNU\nON\nPE\nQC\nSK\nYT",
+   "reqd": 1,
+   "set_only_once": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "description": "The province whose plan this profile bills"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Active\nInactive",
+   "default": "Active",
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "values_section",
+   "fieldtype": "Section Break",
+   "label": "Billing Values"
+  },
+  {
+   "fieldname": "billing_values",
+   "fieldtype": "Table",
+   "label": "Values",
+   "options": "Practitioner Billing Profile Value",
+   "description": "The keys the province bills with. Which keys exist, which are required and their formats are set by the province."
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-16 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Practitioner Billing Profile",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "practitioner_name",
+ "track_changes": 1
+}

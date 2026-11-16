@@ -3,7 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import get_link_to_form, getdate, today
 
-from ophis_emr_core.emr_core import phi
+from ophis_emr_core.emr_core import clinics, phi
 from ophis_emr_core.emr_core.validators import (
 	normalize_health_card_number,
 	normalize_health_card_version,
@@ -34,6 +34,12 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 			row.contact_name = " ".join(filter(None, [row.first_name, row.last_name]))
 			phi.validate_lengths(row)
 		self.warn_about_possible_duplicates()
+		if self.is_new():
+			clinics.check_clinic_can_be_found(self)
+
+	def after_insert(self):
+		# The clinic registering the patient: `flags.clinic`, or the user's own.
+		clinics.link_new_record(self)
 
 	def after_delete(self):
 		phi.encrypt_deleted_document(self)

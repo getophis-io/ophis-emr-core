@@ -28,6 +28,7 @@ SUBJECT_FIELDS = {
 	"Patient Condition": "condition",
 	"Patient Medication": "medication_name",
 	"Patient Appointment": "appointment_date",
+	"Patient Clinic": "clinic",
 	"Clinical Note": "note_type",
 	"Patient Order": "order_type",
 	"Patient Referral": "referred_to",
@@ -71,7 +72,8 @@ def on_trash(doc, method=None):
 def record(doc, action: str, changes: list[dict] | None = None, **overrides):
 	"""Write one changelog entry. `overrides` exists for the backfill patch only."""
 	patient = get_patient(doc)
-	if not patient:
+	# A record made as part of another one, such as a new patient's first clinic, is logged with it.
+	if not patient or doc.flags.part_of_creation:
 		return
 	# A save that changed nothing is not an event.
 	if action == "Updated" and not changes:

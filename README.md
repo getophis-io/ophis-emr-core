@@ -18,11 +18,13 @@ only in Simulator mode, and it must not be used with real patient information.
 
 ## What is in it
 
-One module, `EMR Core`. From ERPNext and Frappe it uses only standard DocTypes: `Company` (the
-clinic), `Employee`, `User` and `Role`.
+One module, `EMR Core`. From ERPNext and Frappe it uses only standard DocTypes: `Company`,
+`Branch` (a clinic), `Employee`, `User` and `Role`.
 
 | Area | DocTypes |
 |---|---|
+| Clinics | `Clinic`, `Patient Clinic`, `Practitioner Clinic`, `Employee Clinic` |
+| Billing profiles | `Practitioner Billing Profile`, `Practitioner Billing Profile Value` |
 | Registration | `Patient`, `Patient Emergency Contact`, `Patient Family Link` |
 | Providers and rooms | `Practitioner`, `Room` |
 | Scheduling | `Appointment Type`, `Patient Appointment` |
@@ -74,7 +76,50 @@ Keys rotate without downtime; the steps are in the docstring of `ophis_emr_core/
 
 ## Provinces
 
-The clinic's province is `clinic_province` in the site config, default `ON`.
+A clinic is an ERPNext `Branch` of a `Company`, so staff, shifts and payroll in HRMS line up
+with it. Its `Clinic` record (named after the Branch, which saving it creates) holds what Branch
+does not: the clinic's province, time zone and holiday list. One site can hold clinics in several
+provinces, and each clinic works in its own province's health system
+(`emr_core/provinces/`). A document with no clinic to go by uses `clinic_province` in the site
+config, default `ON`.
+
+A site with no clinic gets one on install, migrate and the end of ERPNext's setup wizard, copied
+from its default company: the company's name, and the province of its address or the site's. A
+single-clinic site needs nothing more; a clinic in another branch is added as a `Clinic`.
+
+**Who belongs to a clinic.** Patients, practitioners and employees each belong to one or more
+clinics, through `Patient Clinic`, `Practitioner Clinic` and `Employee Clinic` (one record per
+person and clinic). Exactly one active clinic is primary: the home clinic, whose company
+`Patient.company` and `Practitioner.company` follow, and which is an employee's `branch` in HRMS
+(a branch changed in HRMS becomes the primary clinic in turn). A new patient or practitioner joins
+the clinic the caller names (`doc.flags.clinic`) or the user's own; on a site with several clinics
+one of them is required. A link is ended by making it Inactive. `emr_core/clinics.py` has the
+lookups (`get_clinics`, `get_primary_clinic`, `get_members`, `add_to_clinic`, `get_default_clinic`).
+
+**What happens inside one clinic.** `Patient Appointment`, `Encounter` and `Room` each belong to
+exactly one clinic (`clinic`, required). An appointment is booked at a clinic its practitioner
+works at, by default the user's own or the practitioner's primary one, and moves clinic only while
+Scheduled. Its encounter is at the same clinic, a walk-in at the clinic checking them in, and
+neither moves. A visit's room is one of its clinic's rooms, and a room stays in its clinic. A
+patient booked or seen at a clinic joins it. Room names are unique within a clinic; a room's
+record name gets its clinic added in brackets where another clinic already uses the name. A new
+clinic starts with the default rooms. `visits.walk_in`, `visits.register_walk_in` and
+`rooms.get_free_rooms` take a `clinic`.
+
+**Billing profiles.** What a practitioner bills a province's plan with is on their `Practitioner
+Billing Profile` for that province (one per practitioner and province, named
+`<practitioner>-<province>`), as key and value rows (`Practitioner Billing Profile Value`). Each
+province defines its keys in code, in `emr_core/provinces/<province>.py` (`BILLING_KEYS`: label,
+required, format, and whether the value can differ by clinic). Ontario's are `billing_number`
+(required), `specialty_code` and `group_number`; the group number can be given per clinic, and a
+row without a clinic applies to the rest of the province. A province with no keys yet takes no
+profile. Billing code reads values through `emr_core/billing_profiles.py`
+(`get_values(practitioner, clinic=...)`).
+
+**Moved fields.** `Practitioner.ohip_billing_number`, `ohip_specialty_code` and
+`ohip_group_number` are gone; the patch `move_billing_numbers_to_profiles` moves their values to
+the practitioner's Ontario billing profile. `testing.make_practitioner` takes them as
+`billing={"billing_number": ...}`.
 
 - **Requisitions** (`emr_core/requisitions/`): one module per province with its test catalogue
   and the mapping onto its PDF form. Ontario's is form 4422-84. Register a province in `FORMS`.
