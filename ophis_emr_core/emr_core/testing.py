@@ -6,6 +6,42 @@ import frappe
 
 from ophis_emr_core.emr_core.validators import passes_luhn
 
+TEST_COMPANY = "Ophis Test Clinic"
+
+
+def before_tests():
+	"""Get a bare test site ready: ERPNext set up for Canada, with a synthetic company and its clinic.
+
+	The `before_tests` hook. A site an app has already set up is left as it is, apart from the
+	default clinic. ERPNext's own `before_tests` runs only for ERPNext's tests, and sets up a
+	US company.
+	"""
+	from frappe.desk.page.setup_wizard.setup_wizard import setup_complete, update_system_settings
+
+	from ophis_emr_core.install import ensure_default_clinic
+
+	if not frappe.is_setup_complete():
+		year = frappe.utils.getdate().year
+		args = frappe._dict(
+			language="English",
+			country="Canada",
+			timezone="America/Toronto",
+			currency="CAD",
+			company_name=TEST_COMPANY,
+			company_abbr="OTC",
+			chart_of_accounts="Standard with Numbers",
+			fy_start_date=f"{year}-01-01",
+			fy_end_date=f"{year}-12-31",
+		)
+		# The wizard takes the region from System Settings when Frappe's own step is already done.
+		update_system_settings(args)
+		result = setup_complete(args)
+		# The wizard reports failure in its return value instead of raising.
+		if not frappe.is_setup_complete():
+			frappe.throw(f"ERPNext setup did not complete on the test site: {result}")
+	ensure_default_clinic()
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit
+
 
 def make_health_card_number() -> str:
 	"""A random number in the Ontario format with a valid check digit. Not a real card."""

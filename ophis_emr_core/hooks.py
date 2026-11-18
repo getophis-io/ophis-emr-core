@@ -12,6 +12,8 @@ after_install = "ophis_emr_core.install.after_install"
 before_migrate = "ophis_emr_core.install.before_migrate"
 after_migrate = "ophis_emr_core.install.after_migrate"
 setup_wizard_complete = "ophis_emr_core.install.after_setup_wizard"
+# A bare test site (as in CI) gets ERPNext set up for Canada and a synthetic company.
+before_tests = "ophis_emr_core.emr_core.testing.before_tests"
 
 # The clinics an employee works at, on the Employee form (Employee belongs to ERPNext).
 override_doctype_dashboards = {"Employee": "ophis_emr_core.emr_core.dashboards.employee"}
