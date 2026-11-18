@@ -6,3 +6,5 @@
 ophis_emr_core.patches.link_records_to_clinics
 ophis_emr_core.patches.set_clinic_on_visits_and_rooms
 ophis_emr_core.patches.move_billing_numbers_to_profiles
+ophis_emr_core.patches.create_patient_billing_profiles
+ophis_emr_core.patches.move_health_cards_to_billing_profiles

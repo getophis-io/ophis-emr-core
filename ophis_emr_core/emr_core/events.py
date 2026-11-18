@@ -34,6 +34,7 @@ SUBJECT_FIELDS = {
 	"Patient Referral": "referred_to",
 	"Prescription": "status",
 	"Billing Claim": "payer",
+	"Patient Billing Profile": "coverage_type",
 	"Lab Result": "source",
 	"Received Report": "report_type",
 }

@@ -18,6 +18,14 @@ DEFAULT_APPOINTMENT_TYPES = {
 	"Minor Procedure": 30,
 }
 
+# The payers a site starts with, besides each province's health plan (from `provinces/`).
+# The clinic changes the list afterwards: a payer removed here is not removed from a site.
+DEFAULT_PAYERS = {
+	"Blue Cross": "Public Funded",
+	"Manulife": "Private",
+	"RBC": "Private",
+}
+
 # A clinic starts with these rooms; it can add, change and close rooms afterwards.
 EXAM_ROOM = (
 	"exam_table",
@@ -51,11 +59,13 @@ def after_install():
 	ensure_default_clinic()
 	ensure_rooms()
 	ensure_appointment_types()
+	ensure_payers()
 
 
 def after_migrate():
 	phi.ensure_key()
 	ensure_default_clinic()
+	ensure_payers()
 	integrations.ensure_records()
 
 
@@ -65,6 +75,19 @@ def ensure_roles():
 			frappe.get_doc({"doctype": "Role", "role_name": role, "desk_access": 1}).insert(
 				ignore_permissions=True
 			)
+
+
+def ensure_payers():
+	"""Each province's health plan, and the default payers, where the site does not have them."""
+	payers = {
+		plan: ("Provincial Health Plan", province) for province, plan in provinces.get_health_plans().items()
+	}
+	payers.update({name: (payer_type, None) for name, payer_type in DEFAULT_PAYERS.items()})
+	for name, (payer_type, province) in payers.items():
+		if not frappe.db.exists("Payer", name):
+			frappe.get_doc(
+				{"doctype": "Payer", "payer_name": name, "payer_type": payer_type, "province": province}
+			).insert(ignore_permissions=True)
 
 
 def ensure_appointment_types():

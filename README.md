@@ -24,7 +24,7 @@ One module, `EMR Core`. From ERPNext and Frappe it uses only standard DocTypes: 
 | Area | DocTypes |
 |---|---|
 | Clinics | `Clinic`, `Patient Clinic`, `Practitioner Clinic`, `Employee Clinic` |
-| Billing profiles | `Practitioner Billing Profile`, `Practitioner Billing Profile Value` |
+| Billing profiles | `Practitioner Billing Profile`, `Practitioner Billing Profile Value`, `Patient Billing Profile`, `Patient Billing Profile Value`, `Payer`, `Plan Detail Key` (virtual) |
 | Registration | `Patient`, `Patient Emergency Contact`, `Patient Family Link` |
 | Providers and rooms | `Practitioner`, `Room` |
 | Scheduling | `Appointment Type`, `Patient Appointment` |
@@ -38,9 +38,12 @@ One module, `EMR Core`. From ERPNext and Frappe it uses only standard DocTypes: 
 
 Rules worth knowing:
 
-- **Health cards.** Ontario numbers are checked for format and check digit, and a number can be
-  registered to only one patient per province. This is not eligibility; that is Health Card
-  Validation.
+- **Health cards.** A patient's health card is their billing profile for the health plan of the
+  province that issued it (see Patient billing profiles), not a field of `Patient`. Any province's
+  card is recorded; a province module that knows its card's format checks it (Ontario: 10 digits
+  and a check digit, a 1–2 letter version code). A number is registered to only one patient per
+  province. This is not eligibility; that is the province's validation service (Ontario's Health
+  Card Validation), whose result is the profile's verification status.
 - **Family Clinic and Walk-in.** A Rostered patient is a Family Clinic patient; anyone else is a
   Walk-in patient. Appointments are booked only as Family Clinic visits, for rostered patients
   with their own practitioner. A practitioner cannot be double-booked.
@@ -61,14 +64,21 @@ book but cannot read the clinical chart.
 
 ## Patient identifiers are encrypted
 
-Health card number, version and expiry, phones, email and emergency contact details are stored
-encrypted (Fernet, with keys derived by HKDF), and found by exact value through keyed blind
+Phones, email, emergency contact details, and patient billing profiles' plan details (health card
+number and version, membership numbers) and expiry are stored encrypted (Fernet, with keys derived by HKDF), and found by exact value through keyed blind
 indexes. The key is the `PII_ENCRYPTION_KEY` environment variable of the bench's processes, never
 the database or site config; install and migrate stop without it. Make one with:
 
 ```
 bench --site <site> execute ophis_emr_core.emr_core.phi.generate_key
 ```
+
+**Masked on the desk.** The same identifiers (phones, email, emergency contact phone and email,
+billing profiles' plan details and expiry) are masked with Frappe's field masking (`mask` on the
+field): desk forms, lists and reports show them as `XXXXXXXX` (phones and emails partly) to users
+without the `mask` permission. The four EMR roles have it; anyone else who can read the records,
+such as a System Manager without an EMR role, sees them masked. Administrator always sees them.
+Masking is for display only: the core's own reads and validation see real values.
 
 Keys rotate without downtime; the steps are in the docstring of `ophis_emr_core/emr_core/phi.py`.
 `Patient` decrypts on load. Code reading these columns with `frappe.get_all` or
@@ -115,6 +125,51 @@ required, format, and whether the value can differ by clinic). Ontario's are `bi
 row without a clinic applies to the rest of the province. A province with no keys yet takes no
 profile. Billing code reads values through `emr_core/billing_profiles.py`
 (`get_values(practitioner, clinic=...)`).
+
+**Patient billing profiles.** How a patient's care is paid for is one `Patient Billing Profile`
+per coverage, of one of four types: Provincial Health Plan, Public Funded, Private or Out of
+Pocket. Each but Out of Pocket names its `Payer` (shown as Provider): the site's list of payers,
+each of one type, which the clinic keeps; the desk offers only the enabled payers of the profile's
+type. A site starts with the health plan of every province and
+territory (`provinces.HEALTH_PLANS`: OHIP, MSI, MSP, RAMQ…), Blue Cross (Public Funded), Manulife and
+RBC (Private).
+
+A Provincial Health Plan profile has an issuing province, the plan's own, set from it. Every
+profile but Out of Pocket has an expiry date and a verification status (Not Checked, Valid, Invalid, with when and the service's
+response), set by a verification service and back to Not Checked when the number, version or
+expiry changes. Its other details are key and value rows (`Patient Billing Profile Value`), like a
+practitioner's, whose keys are set in code against each plan (`PlanKey`: label, required, format):
+
+| Plan | Keys |
+|---|---|
+| A province's health plan (OHIP, MSI, …) | `health_card_number` (required), `version_code`; a province module can give its own (`PLAN_KEYS` in `provinces/<province>.py`; Ontario checks its formats) |
+| Blue Cross | `membership_number` (required), `plan_contract_number`, `owner_name` (default: the patient) |
+| Manulife, RBC | `plan_contract_number`, `membership_number` (required), `owner_name` (default: the patient), `employer_name` |
+| A payer the clinic adds | its type's (`PLAN_KEYS`: Public Funded as Blue Cross, Private as Manulife) |
+| Out of Pocket | none |
+
+Plans and their keys are in `PLAN_KEYS_BY_PAYER` in `emr_core/patient_billing.py`. The desk suggests
+the keys of the Provider chosen: a row's Key links to `Plan Detail Key`, a virtual DocType (no
+table, nothing stored or synced) whose controller answers from this code, filtered by the
+profile's provider. Only the plan's keys are accepted, whatever is typed.
+
+Every patient has an Out of Pocket profile, made with the patient, which cannot be ended. A health
+card added is primary. Exactly one active profile is primary; when it ends, the next in billing
+order (provincial, public, private, out of pocket) takes over. Values are encrypted and blind-indexed.
+`emr_core/patient_billing.py` has the health card (`set_health_card`, `get_health_card`,
+`get_health_cards` for lists, `find_patients_by_health_card` for lookups by number) and any
+coverage (`get_profiles`, each with its `plan_values`; `get_primary_profile`; `add_profile`).
+
+**Health card moved off Patient.** `Patient.health_card_province`, `health_card_number`,
+`health_card_version`, `health_card_expiry`, `health_card_status`, `health_card_checked_on`,
+`health_card_response` and `health_card_number_index` are gone. Apps read the card with
+`patient_billing.get_health_card(patient)`, write it with `set_health_card`, and find patients by
+number with `find_patients_by_health_card` instead of `health_card_number_index`. The patch
+`move_health_cards_to_billing_profiles` moves each patient's card, verification included, to their
+health plan's profile and clears the old columns; a card it cannot move is left and reported.
+`visits.register_walk_in` still takes `health_card_province`, `health_card_number` and
+`health_card_version`, and `testing.make_patient` still takes them (as `health_card_*` keyword
+arguments) and sets `patient.health_card`.
 
 **Moved fields.** `Practitioner.ohip_billing_number`, `ohip_specialty_code` and
 `ohip_group_number` are gone; the patch `move_billing_numbers_to_profiles` moves their values to

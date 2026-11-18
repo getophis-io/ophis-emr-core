@@ -9,7 +9,7 @@ import frappe
 from frappe import _
 from frappe.utils import getdate
 
-from ophis_emr_core.emr_core import billing_profiles
+from ophis_emr_core.emr_core import billing_profiles, patient_billing
 
 CHECKED = "/Yes"
 # The hematology, immunology and microbiology checkboxes all use this state name on the template.
@@ -226,7 +226,8 @@ def get_field_values(order) -> tuple[dict, dict]:
 	other_tests = lines(order.other_tests) if selected or lines(order.other_tests) else lines(order.tests)
 
 	born = getdate(patient.date_of_birth)
-	insured_here = patient.health_card_province == "ON"
+	card = patient_billing.get_health_card(patient.name) or frappe._dict()
+	insured_here = card.province == "ON"
 	text = {
 		"name": practitioner.practitioner_name or "",
 		"address": get_clinic_address(practitioner.company or patient.company),
@@ -234,10 +235,10 @@ def get_field_values(order) -> tuple[dict, dict]:
 		"CPSO  Registration No": practitioner.college_registration_number or "",
 		"contactNumber1": practitioner.phone or "",
 		"Additional Clinical Information eg diagnosis": order.clinical_information or "",
-		"Health Number": (patient.health_card_number or "") if insured_here else "",
-		"version": (patient.health_card_version or "") if insured_here else "",
-		"Province": patient.health_card_province if patient.health_card_number else "",
-		"Other Provincial Registration Number": "" if insured_here else (patient.health_card_number or ""),
+		"Health Number": (card.number or "") if insured_here else "",
+		"version": (card.version or "") if insured_here else "",
+		"Province": card.province if card.number else "",
+		"Other Provincial Registration Number": "" if insured_here else (card.number or ""),
 		"y_birth2": f"{born.year:04d}",
 		"m_birth2": f"{born.month:02d}",
 		"d_birth2": f"{born.day:02d}",

@@ -3,16 +3,8 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import get_link_to_form, getdate, today
 
-from ophis_emr_core.emr_core import clinics, phi
-from ophis_emr_core.emr_core.validators import (
-	normalize_health_card_number,
-	normalize_health_card_version,
-	normalize_postal_code,
-)
-
-
-class DuplicateHealthCardError(frappe.ValidationError):
-	pass
+from ophis_emr_core.emr_core import clinics, patient_billing, phi
+from ophis_emr_core.emr_core.validators import normalize_postal_code
 
 
 def get_patient_type(enrolment_status: str | None) -> str:
@@ -27,7 +19,6 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 		self.validate_date_of_birth()
 		self.validate_date_of_death()
 		self.validate_primary_practitioner()
-		self.validate_health_card()
 		self.postal_code = normalize_postal_code(self.postal_code)
 		phi.validate_lengths(self)
 		for row in self.emergency_contacts:
@@ -40,6 +31,11 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 	def after_insert(self):
 		# The clinic registering the patient: `flags.clinic`, or the user's own.
 		clinics.link_new_record(self)
+
+	def on_update(self):
+		if self.flags.in_insert:
+			# Every patient can pay out of pocket; a health card is added as its own profile.
+			patient_billing.ensure_out_of_pocket(self.name, part_of_creation=True)
 
 	def after_delete(self):
 		phi.encrypt_deleted_document(self)
@@ -79,35 +75,6 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 		)
 		if not accepting:
 			frappe.throw(_("{0} is not accepting new patients.").format(name))
-
-	def validate_health_card(self):
-		self.health_card_number = normalize_health_card_number(
-			self.health_card_number, self.health_card_province
-		)
-		self.health_card_version = normalize_health_card_version(self.health_card_version)
-		self.health_card_expiry = phi.normalize_date(self.health_card_expiry)
-		if not self.health_card_number:
-			return
-
-		duplicate = frappe.db.get_value(
-			"Patient",
-			{
-				# The number is stored encrypted; its blind index is what can be matched.
-				"health_card_number_index": (
-					"in",
-					phi.blind_indexes("health_card_number", self.health_card_number),
-				),
-				"health_card_province": self.health_card_province,
-				"name": ("!=", self.name),
-			},
-		)
-		if duplicate:
-			frappe.throw(
-				_("Health Card Number {0} is already registered to {1}.").format(
-					self.health_card_number, get_link_to_form("Patient", duplicate)
-				),
-				DuplicateHealthCardError,
-			)
 
 	def get_possible_duplicates(self) -> list[str]:
 		"""Other patients sharing this patient's first name, last name and date of birth."""

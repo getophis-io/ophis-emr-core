@@ -8,7 +8,7 @@ import frappe
 from frappe import _
 from frappe.utils import cint, now_datetime, today
 
-from ophis_emr_core.emr_core import notify, phi
+from ophis_emr_core.emr_core import notify, patient_billing, provinces
 from ophis_emr_core.emr_core.chart import get_practitioner_for_user
 from ophis_emr_core.emr_core.doctype.encounter.encounter import (
 	NURSE_ROLE,
@@ -24,11 +24,10 @@ WALK_IN_REGISTRATION_FIELDS = (
 	"last_name",
 	"date_of_birth",
 	"sex",
-	"health_card_province",
-	"health_card_number",
-	"health_card_version",
 	"mobile_phone",
 )
+# Their health card (health_card_province, health_card_number, health_card_version) is recorded as
+# their provincial health plan profile.
 
 NOT_A_PRACTITIONER = (
 	"Only a practitioner can write clinical notes. This login is not linked to a practitioner record."
@@ -104,14 +103,27 @@ def register_walk_in(
 			filters={
 				field: registration.get(field) for field in ("first_name", "last_name", "date_of_birth")
 			},
-			fields=["name", "patient_name", "date_of_birth", "health_card_number", "health_card_version"],
+			fields=["name", "patient_name", "date_of_birth"],
 		)
 		if duplicates:
-			return {"possible_duplicates": phi.decrypt_rows("Patient", duplicates)}
+			cards = patient_billing.get_health_cards([row.name for row in duplicates])
+			for row in duplicates:
+				card = cards.get(row.name) or {}
+				row.health_card_number = card.get("number")
+				row.health_card_version = card.get("version")
+			return {"possible_duplicates": duplicates}
 
 	patient = frappe.get_doc({"doctype": "Patient", **registration, "enrolment_status": "Not Rostered"})
 	patient.flags.clinic = clinic
 	patient.insert()
+	if values.get("health_card_number"):
+		patient_billing.set_health_card(
+			patient.name,
+			values.get("health_card_province") or provinces.get_clinic_province(clinic),
+			values.get("health_card_number"),
+			values.get("health_card_version"),
+			part_of_creation=True,
+		)
 	# The controller's own duplicate warning is a desk message; they were offered above instead.
 	frappe.clear_messages()
 	return {"patient": patient.name, "encounter": walk_in(patient.name, reason_for_visit, clinic).name}
