@@ -8,6 +8,7 @@ from ophis_emr_core.emr_core.testing import make_appointment, make_patient, make
 # need to generate ERPNext test fixtures for the standard DocTypes this one links to.
 IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "Company", "Employee"]
 
+
 class TestPatientAppointment(IntegrationTestCase):
 	def setUp(self):
 		self.patient = make_patient()

@@ -15,7 +15,9 @@ import zipfile
 import frappe
 from frappe.utils import now
 
-DPD_EXTRACT_URL = "https://www.canada.ca/content/dam/hc-sc/documents/services/drug-product-database/allfiles.zip"
+DPD_EXTRACT_URL = (
+	"https://www.canada.ca/content/dam/hc-sc/documents/services/drug-product-database/allfiles.zip"
+)
 
 # Column positions in the extract's files, from the DPD's published file layout.
 DRUG = {"code": 0, "class": 2, "din": 3, "brand_name": 4}
@@ -25,7 +27,17 @@ SECOND_COLUMN_FILES = {"form.txt": 2, "route.txt": 2, "schedule.txt": 1, "comp.t
 # Schedules under the Controlled Drugs and Substances Act: the drugs a pharmacy must see
 # extra identification for.
 MONITORED_SCHEDULES = ("NARCOTIC", "CONTROLLED DRUGS", "TARGETED SUBSTANCES")
-FIELDS = ["din", "brand_name", "generic_name", "strength", "form", "route", "schedule", "monitored", "company"]
+FIELDS = [
+	"din",
+	"brand_name",
+	"generic_name",
+	"strength",
+	"form",
+	"route",
+	"schedule",
+	"monitored",
+	"company",
+]
 
 
 def import_dpd(path: str | None = None) -> int:
@@ -66,8 +78,12 @@ def build_products(files: dict[str, list[list[str]]]) -> list[dict]:
 
 	ingredients = {}
 	for row in files["ingred.txt"]:
-		strength = " ".join(filter(None, [row[INGREDIENT["strength"]].strip(), row[INGREDIENT["strength_unit"]].strip()]))
-		per = " ".join(filter(None, [row[INGREDIENT["dosage_value"]].strip(), row[INGREDIENT["dosage_unit"]].strip()]))
+		strength = " ".join(
+			filter(None, [row[INGREDIENT["strength"]].strip(), row[INGREDIENT["strength_unit"]].strip()])
+		)
+		per = " ".join(
+			filter(None, [row[INGREDIENT["dosage_value"]].strip(), row[INGREDIENT["dosage_unit"]].strip()])
+		)
 		ingredients.setdefault(row[INGREDIENT["code"]], []).append(
 			# "NORTRIPTYLINE (NORTRIPTYLINE HYDROCHLORIDE)" names the substance, then its salt.
 			(row[INGREDIENT["name"]].split(" (")[0].strip(), f"{strength} / {per}" if per else strength)
@@ -83,7 +99,9 @@ def build_products(files: dict[str, list[list[str]]]) -> list[dict]:
 			"din": din,
 			"brand_name": row[DRUG["brand_name"]].strip()[:140],
 			"generic_name": " / ".join(name for name, _strength in ingredients.get(code, []))[:140],
-			"strength": " / ".join(strength for _name, strength in ingredients.get(code, []) if strength)[:140],
+			"strength": " / ".join(strength for _name, strength in ingredients.get(code, []) if strength)[
+				:140
+			],
 			"form": ", ".join(forms.get(code, []))[:140],
 			"route": ", ".join(routes.get(code, []))[:140],
 			"schedule": schedule[:140],
@@ -100,7 +118,15 @@ def replace_products(products: list[dict]):
 		"Drug Product",
 		["name", "creation", "modified", "owner", "modified_by", "docstatus", *FIELDS],
 		[
-			(product["din"], timestamp, timestamp, "Administrator", "Administrator", 0, *(product[field] for field in FIELDS))
+			(
+				product["din"],
+				timestamp,
+				timestamp,
+				"Administrator",
+				"Administrator",
+				0,
+				*(product[field] for field in FIELDS),
+			)
 			for product in products
 		],
 	)

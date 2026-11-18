@@ -23,7 +23,9 @@ def stored(patient: str, field: str, doctype: str = "Patient") -> str | None:
 def find(field: str, value: str) -> list[str]:
 	"""Patients whose `field` is exactly `value`, through the blind index."""
 	index_field = phi.INDEX_FIELDS["Patient"][field]
-	return frappe.get_all("Patient", filters={index_field: ("in", phi.blind_indexes(field, value))}, pluck="name")
+	return frappe.get_all(
+		"Patient", filters={index_field: ("in", phi.blind_indexes(field, value))}, pluck="name"
+	)
 
 
 class TestPatientEncryption(IntegrationTestCase):
@@ -35,7 +37,14 @@ class TestPatientEncryption(IntegrationTestCase):
 			health_card_expiry=EXPIRY,
 			mobile_phone=PHONE,
 			email=EMAIL,
-			emergency_contacts=[{"first_name": "Synthetic", "last_name": "Contact", "relationship": "Sibling", "phone": CONTACT_PHONE}],
+			emergency_contacts=[
+				{
+					"first_name": "Synthetic",
+					"last_name": "Contact",
+					"relationship": "Sibling",
+					"phone": CONTACT_PHONE,
+				}
+			],
 		)
 
 	def test_identifiers_are_ciphertext_in_the_database(self):
@@ -87,13 +96,17 @@ class TestPatientEncryption(IntegrationTestCase):
 		other = make_patient(home_phone="416 555 0199")
 		indexes = phi.blind_indexes("mobile_phone", "4165550199")
 		self.assertEqual(indexes, phi.blind_indexes("home_phone", "4165550199"))
-		self.assertIn(other.name, frappe.get_all("Patient", filters={"home_phone_index": ("in", indexes)}, pluck="name"))
+		self.assertIn(
+			other.name, frappe.get_all("Patient", filters={"home_phone_index": ("in", indexes)}, pluck="name")
+		)
 
 	def test_version_log_redacts_values(self):
 		self.patient.mobile_phone = "+1 416-555-0177"
 		self.patient.save(ignore_version=False)
 		data = frappe.parse_json(
-			frappe.get_last_doc("Version", filters={"ref_doctype": "Patient", "docname": self.patient.name}).data
+			frappe.get_last_doc(
+				"Version", filters={"ref_doctype": "Patient", "docname": self.patient.name}
+			).data
 		)
 		change = next(change for change in data["changed"] if change[0] == "mobile_phone")
 		self.assertEqual(change[1:], [phi.REDACTED, phi.REDACTED])
@@ -101,9 +114,13 @@ class TestPatientEncryption(IntegrationTestCase):
 
 	def test_version_log_redacts_emergency_contacts(self):
 		self.patient.emergency_contacts[0].phone = "+1 647-555-0166"
-		self.patient.append("emergency_contacts", {"first_name": "Second", "last_name": "Contact", "phone": "+1 647-555-0177"})
+		self.patient.append(
+			"emergency_contacts", {"first_name": "Second", "last_name": "Contact", "phone": "+1 647-555-0177"}
+		)
 		self.patient.save(ignore_version=False)
-		data = frappe.get_last_doc("Version", filters={"ref_doctype": "Patient", "docname": self.patient.name}).data
+		data = frappe.get_last_doc(
+			"Version", filters={"ref_doctype": "Patient", "docname": self.patient.name}
+		).data
 		self.assertNotIn("0166", data)
 		self.assertNotIn("0177", data)
 		self.assertNotIn("0123", data)
@@ -131,9 +148,9 @@ class TestPatientEncryption(IntegrationTestCase):
 		new_key = phi.generate_key()
 		# Rotate back afterwards: the rotation rewrites every patient on the site, not just this one.
 		self.addCleanup(
-			lambda: patch.dict(os.environ, {phi.KEY_VARIABLE: original_key, phi.PREVIOUS_KEYS_VARIABLE: new_key})(
-				phi.reencrypt_all
-			)()
+			lambda: patch.dict(
+				os.environ, {phi.KEY_VARIABLE: original_key, phi.PREVIOUS_KEYS_VARIABLE: new_key}
+			)(phi.reencrypt_all)()
 		)
 		with patch.dict(os.environ, {phi.KEY_VARIABLE: new_key, phi.PREVIOUS_KEYS_VARIABLE: original_key}):
 			# Before re-encryption: old values still read, and old blind indexes still match.
@@ -150,7 +167,9 @@ class TestPatientEncryption(IntegrationTestCase):
 				stored(self.patient.name, "health_card_number_index"),
 				phi.blind_index("health_card_number", self.number),
 			)
-			self.assertEqual(frappe.get_doc("Patient", self.patient.name).emergency_contacts[0].phone, CONTACT_PHONE)
+			self.assertEqual(
+				frappe.get_doc("Patient", self.patient.name).emergency_contacts[0].phone, CONTACT_PHONE
+			)
 
 			# Step 3: with the old key gone, everything still reads and matches.
 			with patch.dict(os.environ, {phi.PREVIOUS_KEYS_VARIABLE: ""}):
@@ -171,7 +190,11 @@ class TestKeyDerivation(IntegrationTestCase):
 class TestEncryptedFieldsOfOtherApps(IntegrationTestCase):
 	def test_other_apps_declare_their_fields_through_a_hook(self):
 		hooks = {"Some Other Record": ["secret_note"], "Patient": ["email", "extra_identifier"]}
-		with patch.object(frappe, "get_hooks", side_effect=lambda name, *args, **kwargs: hooks if name == "phi_encrypted_fields" else []):
+		with patch.object(
+			frappe,
+			"get_hooks",
+			side_effect=lambda name, *args, **kwargs: hooks if name == "phi_encrypted_fields" else [],
+		):
 			fields = phi.encrypted_fields()
 		self.assertEqual(fields["Some Other Record"], ("secret_note",))
 		# The core's own fields stay, once each, with the app's added after them.

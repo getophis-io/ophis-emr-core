@@ -99,10 +99,15 @@ class Key:
 		except ValueError:
 			master = b""
 		if len(master) != 32:
-			frappe.throw(_("An encryption key must be 32 random bytes, base64-encoded. Make one with generate_key."), MissingKeyError)
+			frappe.throw(
+				_("An encryption key must be 32 random bytes, base64-encoded. Make one with generate_key."),
+				MissingKeyError,
+			)
 
 		def derive(purpose: bytes) -> bytes:
-			return HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=KDF_CONTEXT + purpose).derive(master)
+			return HKDF(algorithm=hashes.SHA256(), length=32, salt=None, info=KDF_CONTEXT + purpose).derive(
+				master
+			)
 
 		# Says which key wrote a value without saying anything about the key.
 		self.id = hashlib.sha256(derive(b"key id")).hexdigest()[:8]
@@ -142,9 +147,9 @@ def get_keys() -> tuple[Key, ...]:
 	current = os.environ.get(KEY_VARIABLE)
 	if not current:
 		frappe.throw(
-			_("{0} is not set, so patient identifiers cannot be read or saved. Set it in the environment of the bench.").format(
-				KEY_VARIABLE
-			),
+			_(
+				"{0} is not set, so patient identifiers cannot be read or saved. Set it in the environment of the bench."
+			).format(KEY_VARIABLE),
 			MissingKeyError,
 		)
 	return load_keys(current, os.environ.get(PREVIOUS_KEYS_VARIABLE, ""))
@@ -245,7 +250,9 @@ def validate_lengths(doc):
 			continue
 		if value and len(str(value)) > MAX_PLAIN_LENGTH:
 			frappe.throw(
-				_("{0} cannot be longer than {1} characters.").format(_(doc.meta.get_label(field)), MAX_PLAIN_LENGTH)
+				_("{0} cannot be longer than {1} characters.").format(
+					_(doc.meta.get_label(field)), MAX_PLAIN_LENGTH
+				)
 			)
 
 
@@ -257,7 +264,9 @@ def normalize_date(value) -> str | None:
 def get_encrypted_tables(doctype: str) -> list[tuple[str, str]]:
 	"""(table fieldname, child DocType) for each child table with encrypted fields."""
 	return [
-		(df.fieldname, df.options) for df in frappe.get_meta(doctype).get_table_fields() if df.options in encrypted_fields()
+		(df.fieldname, df.options)
+		for df in frappe.get_meta(doctype).get_table_fields()
+		if df.options in encrypted_fields()
 	]
 
 
@@ -406,7 +415,9 @@ def reencrypt_all(commit_every: int = 500) -> int:
 			save("Patient Event", event.name, {"changes": frappe.as_json(changes, indent=None)})
 
 	for deleted in frappe.get_all(
-		"Deleted Document", filters={"deleted_doctype": ("in", list(encrypted_fields()))}, fields=["name", "deleted_doctype", "data"]
+		"Deleted Document",
+		filters={"deleted_doctype": ("in", list(encrypted_fields()))},
+		fields=["name", "deleted_doctype", "data"],
 	):
 		data = frappe.parse_json(deleted.data or "{}")
 		if encrypt_record(deleted.deleted_doctype, data, reencrypt):

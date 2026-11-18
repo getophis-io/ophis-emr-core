@@ -3,8 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import get_fullname, now_datetime
 
-from ophis_emr_core.emr_core import notify
-from ophis_emr_core.emr_core import clinics
+from ophis_emr_core.emr_core import clinics, notify
 from ophis_emr_core.emr_core.rooms import refresh_status
 
 # Who has the patient. A visit opened when the patient checks in waits for a nurse; the nurse
@@ -40,10 +39,20 @@ class Encounter(Document):
 	def validate_clinic(self):
 		"""A visit happens at one clinic: its appointment's, or for a walk-in the clinic checking
 		them in. Its practitioner works there and its room is there."""
-		booked_at = frappe.db.get_value("Patient Appointment", self.appointment, "clinic") if self.appointment else None
-		clinics.require_clinic(self, booked_at, self.practitioner and clinics.get_primary_clinic("Practitioner", self.practitioner))
+		booked_at = (
+			frappe.db.get_value("Patient Appointment", self.appointment, "clinic")
+			if self.appointment
+			else None
+		)
+		clinics.require_clinic(
+			self,
+			booked_at,
+			self.practitioner and clinics.get_primary_clinic("Practitioner", self.practitioner),
+		)
 		if booked_at and booked_at != self.clinic:
-			frappe.throw(_("The visit is at {0}, where appointment {1} is booked.").format(booked_at, self.appointment))
+			frappe.throw(
+				_("The visit is at {0}, where appointment {1} is booked.").format(booked_at, self.appointment)
+			)
 		clinics.check_not_moved(self)
 		if self.is_new():
 			clinics.check_clinic_open(self.clinic)
@@ -68,7 +77,9 @@ class Encounter(Document):
 		if status == "Closed":
 			frappe.throw(_("{0} is closed.").format(self.room))
 		other = frappe.db.get_value(
-			"Encounter", {"room": self.room, "status": "In Progress", "name": ("!=", self.name)}, "patient_name"
+			"Encounter",
+			{"room": self.room, "status": "In Progress", "name": ("!=", self.name)},
+			"patient_name",
 		)
 		if other:
 			frappe.throw(_("{0} is occupied by {1}.").format(self.room, other), RoomOccupiedError)
@@ -154,7 +165,9 @@ class Encounter(Document):
 			frappe.throw(_("Only a visit a nurse has picked up can be handed over."))
 		if self.nurse != frappe.session.user:
 			frappe.throw(
-				_("{0} picked this visit up, so only they can hand it over.").format(get_fullname(self.nurse)),
+				_("{0} picked this visit up, so only they can hand it over.").format(
+					get_fullname(self.nurse)
+				),
 				frappe.PermissionError,
 			)
 
@@ -162,7 +175,10 @@ class Encounter(Document):
 		self.save()
 		# A walk-in without a physician is offered to every physician working now.
 		notify.notify_visit(
-			self, _("{0} has been seen by {1} and is ready for {2}."), self.nurse, to_physicians=not self.practitioner
+			self,
+			_("{0} has been seen by {1} and is ready for {2}."),
+			self.nurse,
+			to_physicians=not self.practitioner,
 		)
 
 	def assign(self, room: str | None = None, nurse: str | None = None, practitioner: str | None = None):
@@ -207,7 +223,10 @@ class Encounter(Document):
 			frappe.throw(_("This encounter is completed and can no longer be changed."))
 
 	def set_appointment_status(self, status: str):
-		if not self.appointment or frappe.db.get_value("Patient Appointment", self.appointment, "status") == status:
+		if (
+			not self.appointment
+			or frappe.db.get_value("Patient Appointment", self.appointment, "status") == status
+		):
 			return
 		# The clinician may not hold write access to the booking itself. This is a normal save,
 		# not a direct database write, so it reaches the changelog.

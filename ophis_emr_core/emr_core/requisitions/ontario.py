@@ -29,8 +29,18 @@ FORM = {
 		{
 			"title": "Biochemistry",
 			"tests": [
-				test("glucose_random", "Glucose, random", "row1.0", buttons={"row1.0": CHECKED, "biochemistry": "/ran"}),
-				test("glucose_fasting", "Glucose, fasting", "row1.0", buttons={"row1.0": CHECKED, "biochemistry": "/fasting"}),
+				test(
+					"glucose_random",
+					"Glucose, random",
+					"row1.0",
+					buttons={"row1.0": CHECKED, "biochemistry": "/ran"},
+				),
+				test(
+					"glucose_fasting",
+					"Glucose, fasting",
+					"row1.0",
+					buttons={"row1.0": CHECKED, "biochemistry": "/fasting"},
+				),
 				test("hba1c", "HbA1C", "row1.1"),
 				test("creatinine", "Creatinine (eGFR)", "row1.2"),
 				test("uric_acid", "Uric Acid", "row1.3"),
@@ -88,9 +98,21 @@ FORM = {
 			"tests": [
 				test("hepatitis_acute", "Acute Hepatitis", "acuteHep", "/ahep"),
 				test("hepatitis_chronic", "Chronic Hepatitis", "acuteHep", "/ch"),
-				test("hepatitis_immune_a", "Immune Status: Hepatitis A", buttons={"acuteHep": "/imm", "viralHepatits.3a": "/a"}),
-				test("hepatitis_immune_b", "Immune Status: Hepatitis B", buttons={"acuteHep": "/imm", "viralHepatits.3b": "/b"}),
-				test("hepatitis_immune_c", "Immune Status: Hepatitis C", buttons={"acuteHep": "/imm", "viralHepatits.3c": "/c"}),
+				test(
+					"hepatitis_immune_a",
+					"Immune Status: Hepatitis A",
+					buttons={"acuteHep": "/imm", "viralHepatits.3a": "/a"},
+				),
+				test(
+					"hepatitis_immune_b",
+					"Immune Status: Hepatitis B",
+					buttons={"acuteHep": "/imm", "viralHepatits.3b": "/b"},
+				),
+				test(
+					"hepatitis_immune_c",
+					"Immune Status: Hepatitis C",
+					buttons={"acuteHep": "/imm", "viralHepatits.3c": "/c"},
+				),
 			],
 		},
 		{
@@ -196,7 +218,9 @@ def get_field_values(order) -> tuple[dict, dict]:
 	from ophis_emr_core.emr_core.requisitions import get_tests, lines
 
 	patient = frappe.get_doc("Patient", order.patient)
-	practitioner = frappe.get_doc("Practitioner", order.practitioner) if order.practitioner else frappe._dict()
+	practitioner = (
+		frappe.get_doc("Practitioner", order.practitioner) if order.practitioner else frappe._dict()
+	)
 	selected = frappe.parse_json(order.selected_tests) or []
 	details = frappe.parse_json(order.requisition_details) or {}
 	other_tests = lines(order.other_tests) if selected or lines(order.other_tests) else lines(order.tests)
@@ -222,7 +246,16 @@ def get_field_values(order) -> tuple[dict, dict]:
 		"patienFname": patient.first_name,
 		"patienLname": patient.middle_name or "",
 		"Patient’s Address including Postal Code": ", ".join(
-			filter(None, [patient.address_line1, patient.address_line2, patient.city, patient.province, patient.postal_code])
+			filter(
+				None,
+				[
+					patient.address_line1,
+					patient.address_line2,
+					patient.city,
+					patient.province,
+					patient.postal_code,
+				],
+			)
 		),
 		"Date": getdate(order.order_date).strftime("%Y/%m/%d"),
 		"specify1": details.get("chlamydia_source", ""),

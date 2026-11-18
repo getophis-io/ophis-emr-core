@@ -114,7 +114,12 @@ def get_changes(before, after) -> list[dict]:
 		return phi.encrypt(cstr(value)) if fieldname in encrypted else cstr(value)
 
 	changes = [
-		{"fieldname": fieldname, "label": label(fieldname), "old": value(fieldname, old), "new": value(fieldname, new)}
+		{
+			"fieldname": fieldname,
+			"label": label(fieldname),
+			"old": value(fieldname, old),
+			"new": value(fieldname, new),
+		}
 		for fieldname, old, new in diff.get("changed", [])
 		if fieldname not in DERIVED_FIELDS and fieldname not in indexes
 	]
@@ -125,7 +130,9 @@ def get_changes(before, after) -> list[dict]:
 			tables.setdefault(row[0], []).append(verb)
 	for fieldname, verbs in tables.items():
 		counts = ", ".join(f"{verbs.count(verb)} {verb}" for verb in dict.fromkeys(verbs))
-		changes.append({"fieldname": fieldname, "label": label(fieldname), "old": "", "new": f"Rows: {counts}"})
+		changes.append(
+			{"fieldname": fieldname, "label": label(fieldname), "old": "", "new": f"Rows: {counts}"}
+		)
 
 	return changes
 

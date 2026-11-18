@@ -86,9 +86,7 @@ class ClinicalNote(Document):
 					{"fieldname": "superseded_by", "label": "Superseded By", "old": "", "new": self.name},
 				],
 			)
-			original.add_comment(
-				"Info", _("Amended by {0}: {1}").format(self.name, self.amendment_reason)
-			)
+			original.add_comment("Info", _("Amended by {0}: {1}").format(self.name, self.amendment_reason))
 
 	def before_cancel(self):
 		frappe.throw(_("A signed clinical note cannot be cancelled. Amend it instead."))

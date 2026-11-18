@@ -68,7 +68,9 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 		Patients a practitioner already has stay with them when they stop accepting more.
 		"""
 		before = self.get_doc_before_save()
-		if not self.primary_practitioner or (before and before.primary_practitioner == self.primary_practitioner):
+		if not self.primary_practitioner or (
+			before and before.primary_practitioner == self.primary_practitioner
+		):
 			return
 		name, accepting = frappe.db.get_value(
 			"Practitioner", self.primary_practitioner, ["practitioner_name", "accepting_patients"]
@@ -89,7 +91,10 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 			"Patient",
 			{
 				# The number is stored encrypted; its blind index is what can be matched.
-				"health_card_number_index": ("in", phi.blind_indexes("health_card_number", self.health_card_number)),
+				"health_card_number_index": (
+					"in",
+					phi.blind_indexes("health_card_number", self.health_card_number),
+				),
 				"health_card_province": self.health_card_province,
 				"name": ("!=", self.name),
 			},

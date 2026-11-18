@@ -19,7 +19,16 @@ DEFAULT_APPOINTMENT_TYPES = {
 }
 
 # A clinic starts with these rooms; it can add, change and close rooms afterwards.
-EXAM_ROOM = ("exam_table", "exam_light", "diagnostic_set", "bp_monitor", "thermometer", "pulse_oximeter", "sink", "sharps_container")
+EXAM_ROOM = (
+	"exam_table",
+	"exam_light",
+	"diagnostic_set",
+	"bp_monitor",
+	"thermometer",
+	"pulse_oximeter",
+	"sink",
+	"sharps_container",
+)
 TRIAGE = ("bp_monitor", "thermometer", "pulse_oximeter", "weight_scale", "stadiometer", "glucometer", "sink")
 DEFAULT_ROOMS = (
 	("Exam Room 1", "Exam Room", EXAM_ROOM),
@@ -62,7 +71,11 @@ def ensure_appointment_types():
 	for appointment_type, duration in DEFAULT_APPOINTMENT_TYPES.items():
 		if not frappe.db.exists("Appointment Type", appointment_type):
 			frappe.get_doc(
-				{"doctype": "Appointment Type", "appointment_type": appointment_type, "default_duration": duration}
+				{
+					"doctype": "Appointment Type",
+					"appointment_type": appointment_type,
+					"default_duration": duration,
+				}
 			).insert(ignore_permissions=True)
 
 

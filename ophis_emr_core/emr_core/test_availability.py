@@ -17,7 +17,9 @@ def at(clock: str, day: str = "2031-03-11"):
 class TestAvailability(IntegrationTestCase):
 	def test_back_to_back_periods_are_one_stretch(self):
 		def periods(practitioner, day):
-			return [(at("08:00"), at("12:00")), (at("12:00"), at("16:00"))] if str(day) == "2031-03-11" else []
+			return (
+				[(at("08:00"), at("12:00")), (at("12:00"), at("16:00"))] if str(day) == "2031-03-11" else []
+			)
 
 		with patch.object(availability, "get_working_periods", side_effect=periods):
 			row = availability.get_availability("any", NOW)
@@ -25,7 +27,9 @@ class TestAvailability(IntegrationTestCase):
 
 	def test_off_duty_shows_when_next_in(self):
 		def periods(practitioner, day):
-			return [(at("09:00", "2031-03-12"), at("17:00", "2031-03-12"))] if str(day) == "2031-03-12" else []
+			return (
+				[(at("09:00", "2031-03-12"), at("17:00", "2031-03-12"))] if str(day) == "2031-03-12" else []
+			)
 
 		with patch.object(availability, "get_working_periods", side_effect=periods):
 			row = availability.get_availability("any", NOW)
@@ -64,7 +68,12 @@ class TestPractitionerTimeClock(IntegrationTestCase):
 
 		def log(log_type, minutes_ago):
 			frappe.get_doc(
-				{"doctype": "Employee Checkin", "employee": employee, "log_type": log_type, "time": frappe.utils.add_to_date(now, minutes=-minutes_ago)}
+				{
+					"doctype": "Employee Checkin",
+					"employee": employee,
+					"log_type": log_type,
+					"time": frappe.utils.add_to_date(now, minutes=-minutes_ago),
+				}
 			).insert(ignore_permissions=True)
 
 		log("IN", 30)

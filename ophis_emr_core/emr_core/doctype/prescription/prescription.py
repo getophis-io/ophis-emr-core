@@ -50,7 +50,9 @@ class Prescription(Document):
 			if item.din and not (item.din.isdigit() and len(item.din) == 8):
 				frappe.throw(_("Row {0}: a DIN is 8 digits.").format(item.idx))
 			# Whether a drug is monitored comes from the drug master, not from the form.
-			item.monitored = cint(frappe.db.get_value("Drug Product", item.din, "monitored")) if item.din else 0
+			item.monitored = (
+				cint(frappe.db.get_value("Drug Product", item.din, "monitored")) if item.din else 0
+			)
 
 	def on_trash(self):
 		if self.status != "Draft":
@@ -66,16 +68,26 @@ class Prescription(Document):
 		)
 		if prescriber.user != frappe.session.user:
 			frappe.throw(
-				_("Only the prescriber can issue a prescription. Log in as the user linked to {0}.").format(self.practitioner),
+				_("Only the prescriber can issue a prescription. Log in as the user linked to {0}.").format(
+					self.practitioner
+				),
 				frappe.PermissionError,
 			)
 
 		if any(item.monitored for item in self.items):
 			# What a pharmacy needs on a prescription for a monitored drug before it can dispense.
 			if not prescriber.college_registration_number:
-				frappe.throw(_("A prescription for a monitored drug needs the prescriber's college registration number."))
+				frappe.throw(
+					_(
+						"A prescription for a monitored drug needs the prescriber's college registration number."
+					)
+				)
 			if not frappe.db.get_value("Patient", self.patient, "health_card_number"):
-				frappe.throw(_("A prescription for a monitored drug needs a health card number on the patient's record."))
+				frappe.throw(
+					_(
+						"A prescription for a monitored drug needs a health card number on the patient's record."
+					)
+				)
 
 		for item in self.items:
 			item.medication = self.add_to_chart(item)
@@ -115,11 +127,16 @@ class Prescription(Document):
 		if not (reason or "").strip():
 			frappe.throw(_("A reason is required to cancel a prescription."))
 
-		self.update({"status": "Cancelled", "cancelled_on": now_datetime(), "cancellation_reason": reason.strip()})
+		self.update(
+			{"status": "Cancelled", "cancelled_on": now_datetime(), "cancellation_reason": reason.strip()}
+		)
 		self.flags.from_action = True
 		self.save()
 		for item in self.items:
-			if item.medication and frappe.db.get_value("Patient Medication", item.medication, "status") == "Active":
+			if (
+				item.medication
+				and frappe.db.get_value("Patient Medication", item.medication, "status") == "Active"
+			):
 				medication = frappe.get_doc("Patient Medication", item.medication)
 				medication.status = "Discontinued"
 				medication.save()

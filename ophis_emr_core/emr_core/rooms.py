@@ -13,7 +13,11 @@ AVAILABLE, OCCUPIED, CLOSED = "Available", "Occupied", "Closed"
 
 def get_facilities() -> list[dict]:
 	"""[{fieldname, label}] for each facility a room can have: every check box on Room."""
-	return [{"fieldname": df.fieldname, "label": df.label} for df in frappe.get_meta("Room").fields if df.fieldtype == "Check"]
+	return [
+		{"fieldname": df.fieldname, "label": df.label}
+		for df in frappe.get_meta("Room").fields
+		if df.fieldtype == "Check"
+	]
 
 
 def get_occupants(clinic: str | None = None) -> dict:
@@ -26,7 +30,18 @@ def get_occupants(clinic: str | None = None) -> dict:
 		for row in frappe.get_all(
 			"Encounter",
 			filters=filters,
-			fields=["name", "room", "patient", "patient_name", "practitioner", "stage", "nurse", "visit_type", "picked_up_on", "encounter_date"],
+			fields=[
+				"name",
+				"room",
+				"patient",
+				"patient_name",
+				"practitioner",
+				"stage",
+				"nurse",
+				"visit_type",
+				"picked_up_on",
+				"encounter_date",
+			],
 		)
 	}
 
@@ -47,7 +62,13 @@ def get_free_rooms(encounter: str | None = None, clinic: str | None = None) -> l
 	rooms = frappe.get_all(
 		"Room",
 		filters=filters,
-		fields=["name", "room_name", "clinic", "room_type", *[facility["fieldname"] for facility in facilities]],
+		fields=[
+			"name",
+			"room_name",
+			"clinic",
+			"room_type",
+			*[facility["fieldname"] for facility in facilities],
+		],
 		order_by="room_name asc",
 	)
 	return [
@@ -76,7 +97,9 @@ def refresh_status(rooms):
 	if not rooms:
 		return
 	occupants = get_occupants()
-	for name, current in frappe.get_all("Room", filters={"name": ("in", rooms)}, fields=["name", "status"], as_list=True):
+	for name, current in frappe.get_all(
+		"Room", filters={"name": ("in", rooms)}, fields=["name", "status"], as_list=True
+	):
 		status = status_of(name, current, occupants)
 		if status != current:
 			frappe.db.set_value("Room", name, "status", status, update_modified=False)

@@ -22,6 +22,10 @@ class TestPractitioner(IntegrationTestCase):
 		self.assertEqual(get_billing_number(practitioner.name), "654321")
 
 	def test_deleting_a_practitioner_deletes_their_billing_profiles(self):
-		practitioner = make_practitioner(clinic=make_clinic(province="ON").name, billing={"billing_number": "123456"})
+		practitioner = make_practitioner(
+			clinic=make_clinic(province="ON").name, billing={"billing_number": "123456"}
+		)
 		practitioner.delete()
-		self.assertFalse(frappe.db.exists("Practitioner Billing Profile", {"practitioner": practitioner.name}))
+		self.assertFalse(
+			frappe.db.exists("Practitioner Billing Profile", {"practitioner": practitioner.name})
+		)

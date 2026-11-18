@@ -16,7 +16,11 @@ class PractitionerBillingProfile(Document):
 	def validate(self):
 		keys = provinces.get_billing_keys(self.province)
 		if not keys:
-			frappe.throw(_("Billing in {0} is not supported yet.").format(provinces.PROVINCES.get(self.province, self.province)))
+			frappe.throw(
+				_("Billing in {0} is not supported yet.").format(
+					provinces.PROVINCES.get(self.province, self.province)
+				)
+			)
 
 		seen = set()
 		for row in self.billing_values:
@@ -33,7 +37,11 @@ class PractitionerBillingProfile(Document):
 			key.check(row.value)
 			if row.clinic:
 				if not key.per_clinic:
-					frappe.throw(_("Row {0}: {1} is the same at every clinic, so it takes no clinic.").format(row.idx, key.label))
+					frappe.throw(
+						_("Row {0}: {1} is the same at every clinic, so it takes no clinic.").format(
+							row.idx, key.label
+						)
+					)
 				if frappe.db.get_value("Clinic", row.clinic, "province") != self.province:
 					frappe.throw(_("Row {0}: {1} is not in {2}.").format(row.idx, row.clinic, self.province))
 			if (row.key, row.clinic or None) in seen:
@@ -42,5 +50,7 @@ class PractitionerBillingProfile(Document):
 			seen.add((row.key, row.clinic or None))
 
 		for key in keys.values():
-			if key.required and not any(k == key.key and (key.per_clinic or not clinic) for k, clinic in seen):
+			if key.required and not any(
+				k == key.key and (key.per_clinic or not clinic) for k, clinic in seen
+			):
 				frappe.throw(_("{0} is required.").format(key.label))

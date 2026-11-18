@@ -11,7 +11,10 @@ PHYSICIAN = "visits.physician@example.com"
 class TestWalkIns(IntegrationTestCase):
 	def test_walk_in_waits_for_a_nurse_with_no_practitioner(self):
 		encounter = visits.walk_in(make_patient().name, "Sore throat")
-		self.assertEqual((encounter.visit_type, encounter.stage, encounter.practitioner), (WALK_IN, WAITING_FOR_NURSE, None))
+		self.assertEqual(
+			(encounter.visit_type, encounter.stage, encounter.practitioner),
+			(WALK_IN, WAITING_FOR_NURSE, None),
+		)
 
 	def test_a_patient_walks_in_once_a_day(self):
 		patient = make_patient().name
@@ -20,13 +23,22 @@ class TestWalkIns(IntegrationTestCase):
 
 	def test_registration_offers_same_name_and_birth_date_first(self):
 		existing = make_patient(date_of_birth="1980-05-05")
-		values = {"first_name": existing.first_name, "last_name": existing.last_name, "date_of_birth": "1980-05-05", "sex": "Female"}
+		values = {
+			"first_name": existing.first_name,
+			"last_name": existing.last_name,
+			"date_of_birth": "1980-05-05",
+			"sex": "Female",
+		}
 		offered = visits.register_walk_in(values)
 		self.assertIn(existing.name, [row.name for row in offered["possible_duplicates"]])
 
 		registered = visits.register_walk_in(values, allow_duplicate=True)
-		self.assertEqual(frappe.db.get_value("Patient", registered["patient"], "enrolment_status"), "Not Rostered")
-		self.assertEqual(frappe.db.get_value("Encounter", registered["encounter"], "patient"), registered["patient"])
+		self.assertEqual(
+			frappe.db.get_value("Patient", registered["patient"], "enrolment_status"), "Not Rostered"
+		)
+		self.assertEqual(
+			frappe.db.get_value("Encounter", registered["encounter"], "patient"), registered["patient"]
+		)
 
 
 class TestWhoMayTakeAVisit(IntegrationTestCase):

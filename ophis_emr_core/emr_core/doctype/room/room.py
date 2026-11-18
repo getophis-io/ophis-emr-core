@@ -22,12 +22,16 @@ class Room(Document):
 	def validate(self):
 		self.room_name = (self.room_name or "").strip()
 		clinics.check_not_moved(self)
-		if frappe.db.exists("Room", {"clinic": self.clinic, "room_name": self.room_name, "name": ("!=", self.name)}):
+		if frappe.db.exists(
+			"Room", {"clinic": self.clinic, "room_name": self.room_name, "name": ("!=", self.name)}
+		):
 			frappe.throw(_("{0} already has a room called {1}.").format(self.clinic, self.room_name))
 		# Only Closed is chosen by hand; Available and Occupied follow the visits in the room.
 		occupant = get_occupants().get(self.name) if not self.is_new() else None
 		if self.status == CLOSED and occupant:
-			frappe.throw(_("{0} cannot be closed while {1} is in it.").format(self.name, occupant.patient_name))
+			frappe.throw(
+				_("{0} cannot be closed while {1} is in it.").format(self.name, occupant.patient_name)
+			)
 		self.status = status_of(self.name, self.status, {self.name: occupant} if occupant else {})
 
 

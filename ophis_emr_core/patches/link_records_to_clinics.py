@@ -18,12 +18,18 @@ def execute():
 	company = frappe.db.get_value("Clinic", clinic, "company")
 
 	for patient in frappe.get_all("Patient", fields=["name", "creation"]):
-		clinics.add_to_clinic("Patient", patient.name, clinic, primary=True, registered_on=patient.creation.date())
+		clinics.add_to_clinic(
+			"Patient", patient.name, clinic, primary=True, registered_on=patient.creation.date()
+		)
 
 	for practitioner in frappe.get_all("Practitioner", pluck="name"):
 		clinics.add_to_clinic("Practitioner", practitioner, clinic, primary=True)
 
 	# Staff of the clinic's company; one whose Branch is another clinic belongs to that one.
-	for employee in frappe.get_all("Employee", filters={"company": company}, fields=["name", "branch", "date_of_joining"]):
+	for employee in frappe.get_all(
+		"Employee", filters={"company": company}, fields=["name", "branch", "date_of_joining"]
+	):
 		home = employee.branch if employee.branch and frappe.db.exists("Clinic", employee.branch) else clinic
-		clinics.add_to_clinic("Employee", employee.name, home, primary=True, from_date=employee.date_of_joining)
+		clinics.add_to_clinic(
+			"Employee", employee.name, home, primary=True, from_date=employee.date_of_joining
+		)

@@ -79,7 +79,9 @@ class TestClinicLinks(IntegrationTestCase):
 		patient = make_patient(clinic=self.north.name)
 		self.assertRaises(
 			frappe.ValidationError,
-			frappe.get_doc({"doctype": "Patient Clinic", "patient": patient.name, "clinic": self.north.name}).insert,
+			frappe.get_doc(
+				{"doctype": "Patient Clinic", "patient": patient.name, "clinic": self.north.name}
+			).insert,
 		)
 
 	def test_a_chart_number_is_unique_within_its_clinic(self):
@@ -95,7 +97,10 @@ class TestClinicLinks(IntegrationTestCase):
 	def test_the_changelog_records_clinics_joined_after_registration(self):
 		patient = make_patient(clinic=self.north.name)
 		events = lambda: frappe.get_all(
-			"Patient Event", filters={"patient": patient.name}, fields=["action", "reference_doctype"], order_by="creation asc"
+			"Patient Event",
+			filters={"patient": patient.name},
+			fields=["action", "reference_doctype"],
+			order_by="creation asc",
 		)
 		self.assertEqual([(e.action, e.reference_doctype) for e in events()], [("Created", "Patient")])
 		clinics.add_to_clinic("Patient", patient.name, self.south.name)
@@ -111,9 +116,13 @@ class TestClinicLinks(IntegrationTestCase):
 		user = make_user(f"prac-{frappe.generate_hash(length=6)}@example.com", ("EMR Physician",))
 		practitioner = make_practitioner(user=user, clinic=self.south.name)
 		clinics.add_to_clinic("Practitioner", practitioner.name, self.north.name, billing_number="123456")
-		self.assertEqual(clinics.get_clinics("Practitioner", practitioner.name), [self.south.name, self.north.name])
+		self.assertEqual(
+			clinics.get_clinics("Practitioner", practitioner.name), [self.south.name, self.north.name]
+		)
 		self.assertEqual(clinics.get_default_clinic(user), self.south.name)
-		self.assertEqual(frappe.db.get_value("Practitioner", practitioner.name, "company"), self.south.company)
+		self.assertEqual(
+			frappe.db.get_value("Practitioner", practitioner.name, "company"), self.south.company
+		)
 		# A patient registered by them joins their clinic.
 		frappe.set_user(user)
 		try:
@@ -140,7 +149,9 @@ class TestClinicLinks(IntegrationTestCase):
 	def test_an_employee_works_only_at_their_company_clinics(self):
 		other = frappe.db.get_value("Company", {"name": ("!=", self.north.company)}, "name")
 		employee = make_employee(other)
-		self.assertRaises(frappe.ValidationError, clinics.add_to_clinic, "Employee", employee.name, self.north.name)
+		self.assertRaises(
+			frappe.ValidationError, clinics.add_to_clinic, "Employee", employee.name, self.north.name
+		)
 
 
 class TestRecordsInsideOneClinic(IntegrationTestCase):
@@ -180,15 +191,24 @@ class TestRecordsInsideOneClinic(IntegrationTestCase):
 
 	def test_the_practitioner_has_to_work_at_the_appointments_clinic(self):
 		self.assertRaises(
-			frappe.ValidationError, make_appointment, self.patient.name, self.practitioner.name, clinic=self.south.name
+			frappe.ValidationError,
+			make_appointment,
+			self.patient.name,
+			self.practitioner.name,
+			clinic=self.south.name,
 		)
 		clinics.add_to_clinic("Practitioner", self.practitioner.name, self.south.name)
-		self.assertEqual(make_appointment(self.patient.name, self.practitioner.name, clinic=self.south.name).clinic, self.south.name)
+		self.assertEqual(
+			make_appointment(self.patient.name, self.practitioner.name, clinic=self.south.name).clinic,
+			self.south.name,
+		)
 
 	def test_a_patient_booked_at_another_clinic_joins_it(self):
 		clinics.add_to_clinic("Practitioner", self.practitioner.name, self.south.name)
 		make_appointment(self.patient.name, self.practitioner.name, clinic=self.south.name)
-		self.assertEqual(clinics.get_clinics("Patient", self.patient.name), [self.north.name, self.south.name])
+		self.assertEqual(
+			clinics.get_clinics("Patient", self.patient.name), [self.north.name, self.south.name]
+		)
 		self.assertEqual(clinics.get_primary_clinic("Patient", self.patient.name), self.north.name)
 
 	def test_only_a_scheduled_appointment_moves_clinic(self):

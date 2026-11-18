@@ -68,7 +68,13 @@ class Integration:
 			if not frappe.flags.in_test:
 				frappe.db.commit()  # nosemgrep
 			raise
-		self.log(action, "Success", reference, result.get("message", "") if isinstance(result, dict) else "", started)
+		self.log(
+			action,
+			"Success",
+			reference,
+			result.get("message", "") if isinstance(result, dict) else "",
+			started,
+		)
 		return result
 
 	def get_secret(self) -> str | None:
@@ -105,7 +111,9 @@ def ensure_records():
 	"""Create the EMR Integration record of each integration of the clinic's province, switched off."""
 	for cls in get_classes():
 		if frappe.db.exists("EMR Integration", cls.code):
-			frappe.db.set_value("EMR Integration", cls.code, {"title": cls.title, "description": cls.description})
+			frappe.db.set_value(
+				"EMR Integration", cls.code, {"title": cls.title, "description": cls.description}
+			)
 			continue
 		frappe.get_doc(
 			{
