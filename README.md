@@ -164,7 +164,9 @@ bench --site <site> install-app ophis_emr_core
 ```
 
 ERPNext v16 must be installed on the site, and `PII_ENCRYPTION_KEY` set in the bench's
-environment. Tests run on a site with `allow_tests` set:
+environment. Tests run on a site with `allow_tests` set. On a site where ERPNext's setup wizard
+has not been run, the tests complete it first for Canada with a synthetic company
+(`testing.before_tests`):
 
 ```
 bench --site <test site> run-tests --app ophis_emr_core
