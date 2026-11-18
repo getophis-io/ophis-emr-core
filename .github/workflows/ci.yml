@@ -128,10 +128,28 @@ jobs:
         working-directory: ${{ env.BENCH }}
         run: bench --site "$SITE" run-tests --app ophis_emr_core --coverage
 
+      # Frappe's test runner writes tracebacks to logs/frappe.testing.log, not the console.
+      - name: Show test errors
+        if: failure()
+        working-directory: ${{ env.BENCH }}
+        run: |
+          log=logs/frappe.testing.log
+          [ -f "$log" ] || { echo "No $log"; exit 0; }
+          # Each failing test's block, from its ERROR/FAIL header through its traceback.
+          grep -n -A40 -E "^(ERROR|FAIL):|Traceback \(most recent call last\)" "$log" | head -n 1500 || tail -n 500 "$log"
+
       - name: Upload coverage
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: coverage
           path: ${{ env.BENCH }}/sites/coverage.xml
+          if-no-files-found: ignore
+
+      - name: Upload bench logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: bench-logs
+          path: ${{ env.BENCH }}/logs/
           if-no-files-found: ignore

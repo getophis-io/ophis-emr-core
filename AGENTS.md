@@ -53,8 +53,10 @@ notifications and the like. They import this app; this app never imports any app
 - **Simulator output is never passed off as real.** Every integration runs in Simulator mode until a
   live connection is built, and its answers say they are simulated.
 - **Synthetic data only.** No real patient information in fixtures, tests or logs.
-- **Tests.** Add a test with any behaviour change. Test modules for DocTypes that link to `User`,
-  `Company` or `Employee` set `IGNORE_TEST_RECORD_DEPENDENCIES`.
+- **Tests.** Add a test with any behaviour change. A test module for a DocType that links to a Frappe
+  or ERPNext DocType (`User`, `Company`, `Employee`, `Branch`, `Holiday List`…) lists it in
+  `IGNORE_TEST_RECORD_DEPENDENCIES`: loading an ERPNext test module inserts ERPNext's own Indian
+  fixtures, which fail on a site set up for Canada. Tests build what they need with `testing.py`.
 
 ## Local dev
 
