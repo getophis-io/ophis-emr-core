@@ -210,10 +210,13 @@ class Encounter(Document):
 		self.save(ignore_permissions=True)
 		if self.stage == WITH_NURSE:
 			self.set_appointment_status("In Progress")
-		where = _(" in {0}").format(self.room) if self.room else ""
+		if self.room:
+			text = _("{0} has been assigned to you in {1}.").format(self.patient_name, self.room)
+		else:
+			text = _("{0} has been assigned to you.").format(self.patient_name)
 		notify.notify(
 			[user for user in told if user],
-			_("{0} has been assigned to you{1}.").format(self.patient_name, where),
+			text,
 			"Encounter",
 			self.name,
 		)

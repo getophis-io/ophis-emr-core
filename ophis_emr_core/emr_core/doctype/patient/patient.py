@@ -31,7 +31,7 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 		self.postal_code = normalize_postal_code(self.postal_code)
 		phi.validate_lengths(self)
 		for row in self.emergency_contacts:
-			row.contact_name = " ".join(filter(None, [row.first_name, row.last_name]))
+			row.contact_name = " ".join(part for part in [row.first_name, row.last_name] if part)
 			phi.validate_lengths(row)
 		self.warn_about_possible_duplicates()
 		if self.is_new():
@@ -45,7 +45,9 @@ class Patient(phi.EncryptedFieldsMixin, Document):
 		phi.encrypt_deleted_document(self)
 
 	def set_patient_name(self):
-		self.patient_name = " ".join(filter(None, [self.first_name, self.middle_name, self.last_name]))
+		self.patient_name = " ".join(
+			part for part in [self.first_name, self.middle_name, self.last_name] if part
+		)
 
 	def validate_date_of_birth(self):
 		if getdate(self.date_of_birth) > getdate(today()):

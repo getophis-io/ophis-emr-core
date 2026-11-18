@@ -384,7 +384,8 @@ def reencrypt_all(commit_every: int = 500) -> int:
 		frappe.db.set_value(doctype, name, values, update_modified=False)
 		rewritten += 1
 		if rewritten % commit_every == 0:
-			frappe.db.commit()  # nosemgrep: a long job, safe to resume
+			# A long job run from the command line; committing in batches makes it safe to resume.
+			frappe.db.commit()  # nosemgrep: frappe-manual-commit
 
 	for doctype, fields in encrypted_fields().items():
 		indexes = INDEX_FIELDS.get(doctype, {})
@@ -429,7 +430,8 @@ def reencrypt_all(commit_every: int = 500) -> int:
 def rotate() -> int:
 	"""Step 2 of a key rotation (see the module docstring)."""
 	rewritten = reencrypt_all()
-	frappe.db.commit()
+	# Run from the command line (`bench execute`), not inside a request.
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit
 	print(f"Re-encrypted {rewritten} rows. {count_on_old_keys()} values remain under an old key.")
 	return rewritten
 

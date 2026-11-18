@@ -246,16 +246,15 @@ def get_field_values(order) -> tuple[dict, dict]:
 		"patienFname": patient.first_name,
 		"patienLname": patient.middle_name or "",
 		"Patient’s Address including Postal Code": ", ".join(
-			filter(
-				None,
-				[
-					patient.address_line1,
-					patient.address_line2,
-					patient.city,
-					patient.province,
-					patient.postal_code,
-				],
-			)
+			part
+			for part in [
+				patient.address_line1,
+				patient.address_line2,
+				patient.city,
+				patient.province,
+				patient.postal_code,
+			]
+			if part
 		),
 		"Date": getdate(order.order_date).strftime("%Y/%m/%d"),
 		"specify1": details.get("chlamydia_source", ""),
@@ -270,7 +269,8 @@ def get_field_values(order) -> tuple[dict, dict]:
 	if "neonatal_bilirubin" in selected:
 		text["clinicianTel"] = practitioner.phone or ""
 		text["patientTel"] = patient.mobile_phone or patient.home_phone or ""
-	text.update(dict(zip(OTHER_TEST_FIELDS, other_tests)))
+	# The form has a fixed number of lines; tests beyond them are left off.
+	text.update(dict(zip(OTHER_TEST_FIELDS, other_tests, strict=False)))
 
 	buttons = {"checkOne": PAYER_STATES.get(details.get("payer") or "OHIP/Insured", "/ohip")}
 	# The form has boxes for M and F only.
@@ -303,4 +303,4 @@ def get_clinic_address(company: str | None) -> str:
 			"Address", address, ["address_line1", "address_line2", "city", "state", "pincode"], as_dict=True
 		)
 		parts += [row.address_line1, row.address_line2, row.city, row.state, row.pincode]
-	return ", ".join(filter(None, parts))
+	return ", ".join(part for part in parts if part)

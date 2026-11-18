@@ -331,14 +331,18 @@ class DigitalHealthDrugRepository(Integration):
 				events.append(
 					{
 						"dispensed_on": str(add_days(today(), -days_ago)),
-						"drug": " ".join(filter(None, [medication.medication_name, medication.strength])),
+						"drug": " ".join(
+							part for part in [medication.medication_name, medication.strength] if part
+						),
 						"din": medication.din or "",
 						"quantity": 30,
 						"quantity_unit": "",
 						"days_supply": 30,
 						"pharmacy": "Simulated Pharmacy",
 						"prescriber": prescribers.get(medication.prescriber) or "",
-						"directions": " ".join(filter(None, [medication.dose, medication.frequency])),
+						"directions": " ".join(
+							part for part in [medication.dose, medication.frequency] if part
+						),
 					}
 				)
 		# One drug from elsewhere, so that reconciling the chart can be tried out.

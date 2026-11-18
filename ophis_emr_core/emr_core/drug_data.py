@@ -43,7 +43,8 @@ FIELDS = [
 def import_dpd(path: str | None = None) -> int:
 	"""Replace the drug master with the DPD extract at `path`, or the current one from Health Canada."""
 	if path:
-		with open(path, "rb") as file:
+		# A path given on the command line by whoever runs `bench execute`; never from a request.
+		with open(path, "rb") as file:  # nosemgrep: frappe-security-file-traversal
 			content = file.read()
 	else:
 		import requests
@@ -59,7 +60,8 @@ def import_dpd(path: str | None = None) -> int:
 		}
 	products = build_products(files)
 	replace_products(products)
-	frappe.db.commit()  # nosemgrep: a data load run from the command line
+	# A data load run from the command line (`bench execute`), not inside a request.
+	frappe.db.commit()  # nosemgrep: frappe-manual-commit
 	return len(products)
 
 
@@ -79,10 +81,14 @@ def build_products(files: dict[str, list[list[str]]]) -> list[dict]:
 	ingredients = {}
 	for row in files["ingred.txt"]:
 		strength = " ".join(
-			filter(None, [row[INGREDIENT["strength"]].strip(), row[INGREDIENT["strength_unit"]].strip()])
+			part
+			for part in [row[INGREDIENT["strength"]].strip(), row[INGREDIENT["strength_unit"]].strip()]
+			if part
 		)
 		per = " ".join(
-			filter(None, [row[INGREDIENT["dosage_value"]].strip(), row[INGREDIENT["dosage_unit"]].strip()])
+			part
+			for part in [row[INGREDIENT["dosage_value"]].strip(), row[INGREDIENT["dosage_unit"]].strip()]
+			if part
 		)
 		ingredients.setdefault(row[INGREDIENT["code"]], []).append(
 			# "NORTRIPTYLINE (NORTRIPTYLINE HYDROCHLORIDE)" names the substance, then its salt.

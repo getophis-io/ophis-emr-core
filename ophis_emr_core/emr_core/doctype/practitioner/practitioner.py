@@ -9,7 +9,7 @@ class Practitioner(Document):
 	`flags.clinic`, or the user's own clinic."""
 
 	def validate(self):
-		self.practitioner_name = " ".join(filter(None, [self.first_name, self.last_name]))
+		self.practitioner_name = " ".join(part for part in [self.first_name, self.last_name] if part)
 		if self.is_new():
 			clinics.check_clinic_can_be_found(self)
 		# Only someone who is practising takes on new patients.

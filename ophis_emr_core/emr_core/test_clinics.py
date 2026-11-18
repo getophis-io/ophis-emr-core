@@ -96,12 +96,15 @@ class TestClinicLinks(IntegrationTestCase):
 
 	def test_the_changelog_records_clinics_joined_after_registration(self):
 		patient = make_patient(clinic=self.north.name)
-		events = lambda: frappe.get_all(
-			"Patient Event",
-			filters={"patient": patient.name},
-			fields=["action", "reference_doctype"],
-			order_by="creation asc",
-		)
+
+		def events():
+			return frappe.get_all(
+				"Patient Event",
+				filters={"patient": patient.name},
+				fields=["action", "reference_doctype"],
+				order_by="creation asc",
+			)
+
 		self.assertEqual([(e.action, e.reference_doctype) for e in events()], [("Created", "Patient")])
 		clinics.add_to_clinic("Patient", patient.name, self.south.name)
 		self.assertEqual(events()[-1].reference_doctype, "Patient Clinic")

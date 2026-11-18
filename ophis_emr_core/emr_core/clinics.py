@@ -252,7 +252,8 @@ def add_unique_index(doctype: str, fields: list[str], name: str):
 		(f"tab{doctype}", name),
 	)
 	if not exists:
-		frappe.db.commit()  # nosemgrep: DDL commits on its own; nothing is left half done.
+		# DDL commits on its own; commit first so nothing is left half done.
+		frappe.db.commit()  # nosemgrep: frappe-manual-commit
 		frappe.db.sql_ddl(
 			f"alter table `tab{doctype}` add unique `{name}` ({', '.join(f'`{field}`' for field in fields)})"
 		)
