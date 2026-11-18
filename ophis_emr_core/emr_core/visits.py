@@ -37,7 +37,9 @@ NOT_A_PRACTITIONER = (
 
 def can_walk_in() -> bool:
 	"""Whether this user can check in a patient who has come without an appointment."""
-	return frappe.has_permission("Patient Appointment", "write") or frappe.has_permission("Encounter", "create")
+	return frappe.has_permission("Patient Appointment", "write") or frappe.has_permission(
+		"Encounter", "create"
+	)
 
 
 def walk_in(patient: str, reason_for_visit: str | None = None, clinic: str | None = None):
@@ -53,7 +55,11 @@ def walk_in(patient: str, reason_for_visit: str | None = None, clinic: str | Non
 	frappe.get_doc("Patient", patient).check_permission("read")
 	already = frappe.db.get_value(
 		"Encounter",
-		{"patient": patient, "status": "In Progress", "encounter_date": ("between", [f"{today()} 00:00:00", f"{today()} 23:59:59"])},
+		{
+			"patient": patient,
+			"status": "In Progress",
+			"encounter_date": ("between", [f"{today()} 00:00:00", f"{today()} 23:59:59"]),
+		},
 		"name",
 	)
 	if already:
@@ -77,7 +83,10 @@ def walk_in(patient: str, reason_for_visit: str | None = None, clinic: str | Non
 
 
 def register_walk_in(
-	values: dict, reason_for_visit: str | None = None, allow_duplicate: bool = False, clinic: str | None = None
+	values: dict,
+	reason_for_visit: str | None = None,
+	allow_duplicate: bool = False,
+	clinic: str | None = None,
 ) -> dict:
 	"""Register someone who has walked in without being a patient yet, and check them in.
 
@@ -92,7 +101,9 @@ def register_walk_in(
 	if not cint(allow_duplicate):
 		duplicates = frappe.get_list(
 			"Patient",
-			filters={field: registration.get(field) for field in ("first_name", "last_name", "date_of_birth")},
+			filters={
+				field: registration.get(field) for field in ("first_name", "last_name", "date_of_birth")
+			},
 			fields=["name", "patient_name", "date_of_birth", "health_card_number", "health_card_version"],
 		)
 		if duplicates:
@@ -126,7 +137,9 @@ def take(encounter: str, room: str | None = None):
 	"""A physician takes a visit as theirs."""
 	doc = frappe.get_doc("Encounter", encounter)
 	if not can_take(doc):
-		frappe.throw(_("Only the physician this visit is with can take it from the nurses."), frappe.PermissionError)
+		frappe.throw(
+			_("Only the physician this visit is with can take it from the nurses."), frappe.PermissionError
+		)
 	doc.begin(room)
 
 

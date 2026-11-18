@@ -19,17 +19,23 @@ class TestChangelog(IntegrationTestCase):
 		for doctype in ("Patient", "Patient Allergy", "Encounter", "Clinical Note"):
 			self.assertIn(doctype, tracked)
 		self.assertNotIn("Patient Event", tracked)
-		self.assertTrue(all(frappe.db.get_value("DocType", doctype, "module") == MODULE for doctype in tracked))
+		self.assertTrue(
+			all(frappe.db.get_value("DocType", doctype, "module") == MODULE for doctype in tracked)
+		)
 
 	def test_insert_and_update_are_logged_with_their_changes(self):
-		allergy = frappe.get_doc({"doctype": "Patient Allergy", "patient": self.patient, "allergen": "Sulfa"}).insert()
+		allergy = frappe.get_doc(
+			{"doctype": "Patient Allergy", "patient": self.patient, "allergen": "Sulfa"}
+		).insert()
 		self.assertEqual(last_event(self.patient, "Patient Allergy").action, "Created")
 
 		allergy.status = "Entered in Error"
 		allergy.save()
 		event = last_event(self.patient, "Patient Allergy")
 		self.assertEqual(event.action, "Updated")
-		change = next(change for change in frappe.parse_json(event.changes) if change["fieldname"] == "status")
+		change = next(
+			change for change in frappe.parse_json(event.changes) if change["fieldname"] == "status"
+		)
 		self.assertEqual(change["new"], "Entered in Error")
 
 	def test_encrypted_values_stay_encrypted_in_the_changelog(self):

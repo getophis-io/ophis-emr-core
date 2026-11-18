@@ -77,22 +77,29 @@ class PatientAppointment(Document):
 		Checked on booking and when who it is for changes, so existing bookings can still be
 		checked in after a patient leaves the roster.
 		"""
-		if not (self.is_new() or any(self.has_value_changed(field) for field in ("patient", "practitioner", "visit_type"))):
+		if not (
+			self.is_new()
+			or any(self.has_value_changed(field) for field in ("patient", "practitioner", "visit_type"))
+		):
 			return
 		if self.visit_type == "Walk-in":
 			frappe.throw(_("Walk-ins are checked in when they arrive, not booked."))
-		enrolment, primary = frappe.db.get_value("Patient", self.patient, ["enrolment_status", "primary_practitioner"])
+		enrolment, primary = frappe.db.get_value(
+			"Patient", self.patient, ["enrolment_status", "primary_practitioner"]
+		)
 		if enrolment != "Rostered":
 			frappe.throw(
-				_("{0} is not rostered with the clinic, so they are seen as a walk-in rather than booked.").format(
-					self.patient_name or self.patient
-				),
+				_(
+					"{0} is not rostered with the clinic, so they are seen as a walk-in rather than booked."
+				).format(self.patient_name or self.patient),
 				NotRosteredError,
 			)
 		if self.practitioner != primary:
 			frappe.throw(
 				_("Family Clinic appointments are with the patient's primary practitioner, {0}.").format(
-					frappe.db.get_value("Practitioner", primary, "practitioner_name") if primary else _("who is not set")
+					frappe.db.get_value("Practitioner", primary, "practitioner_name")
+					if primary
+					else _("who is not set")
 				),
 				NotRosteredError,
 			)

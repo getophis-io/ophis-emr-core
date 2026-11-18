@@ -20,7 +20,9 @@ class Clinic(Document):
 		if not self.time_zone:
 			self.time_zone = provinces.TIME_ZONES[self.province]
 		if self.time_zone not in available_timezones():
-			frappe.throw(_("{0} is not a time zone. Use a name such as America/Toronto.").format(self.time_zone))
+			frappe.throw(
+				_("{0} is not a time zone. Use a name such as America/Toronto.").format(self.time_zone)
+			)
 
 		before = self.get_doc_before_save()
 		if before and before.company != self.company:

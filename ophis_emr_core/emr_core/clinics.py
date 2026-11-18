@@ -75,7 +75,9 @@ class ClinicLink(Document):
 	def follow_primary(self, clinic):
 		"""Keep the record in step with its primary clinic."""
 		# A field kept in step, not an edit of the record: its modified time stays as it was.
-		frappe.db.set_value(self.owner_doctype, self.owner_name, "company", clinic.company, update_modified=False)
+		frappe.db.set_value(
+			self.owner_doctype, self.owner_name, "company", clinic.company, update_modified=False
+		)
 
 	def on_trash(self):
 		if self.is_primary and not self.flags.owner_deleted:
@@ -88,7 +90,9 @@ def get_links(doctype: str, name: str, active_only: bool = True) -> list[dict]:
 	filters = {field: name}
 	if active_only:
 		filters["status"] = ACTIVE
-	return frappe.get_all(link_doctype, filters=filters, fields=["*"], order_by="is_primary desc, creation asc")
+	return frappe.get_all(
+		link_doctype, filters=filters, fields=["*"], order_by="is_primary desc, creation asc"
+	)
 
 
 def get_clinics(doctype: str, name: str) -> list[str]:
@@ -107,7 +111,9 @@ def get_members(doctype: str, clinic: str) -> list[str]:
 	return frappe.get_all(link_doctype, filters={"clinic": clinic, "status": ACTIVE}, pluck=field)
 
 
-def add_to_clinic(doctype: str, name: str, clinic: str, primary: bool = False, part_of_creation: bool = False, **values):
+def add_to_clinic(
+	doctype: str, name: str, clinic: str, primary: bool = False, part_of_creation: bool = False, **values
+):
 	"""Link a record to a clinic, or return its existing link.
 
 	`part_of_creation` is for the first clinic of a record being created: the patient changelog
@@ -117,7 +123,9 @@ def add_to_clinic(doctype: str, name: str, clinic: str, primary: bool = False, p
 	existing = frappe.db.get_value(link_doctype, {field: name, "clinic": clinic})
 	if existing:
 		return frappe.get_doc(link_doctype, existing)
-	link = frappe.get_doc({"doctype": link_doctype, field: name, "clinic": clinic, "is_primary": 1 if primary else 0, **values})
+	link = frappe.get_doc(
+		{"doctype": link_doctype, field: name, "clinic": clinic, "is_primary": 1 if primary else 0, **values}
+	)
 	link.flags.part_of_creation = part_of_creation
 	return link.insert(ignore_permissions=True)
 
@@ -174,7 +182,9 @@ def on_employee_update(doc, method=None):
 		return
 	if not (method == "after_insert" or doc.has_value_changed("branch")):
 		return
-	link = add_to_clinic("Employee", doc.name, doc.branch, primary=True, from_date=doc.date_of_joining or today())
+	link = add_to_clinic(
+		"Employee", doc.name, doc.branch, primary=True, from_date=doc.date_of_joining or today()
+	)
 	if not link.is_primary or link.status != ACTIVE:
 		link.status = ACTIVE
 		link.is_primary = 1
@@ -186,13 +196,19 @@ def on_employee_update(doc, method=None):
 
 
 def works_at(practitioner: str, clinic: str) -> bool:
-	return bool(frappe.db.exists("Practitioner Clinic", {"practitioner": practitioner, "clinic": clinic, "status": ACTIVE}))
+	return bool(
+		frappe.db.exists(
+			"Practitioner Clinic", {"practitioner": practitioner, "clinic": clinic, "status": ACTIVE}
+		)
+	)
 
 
 def check_works_at(practitioner: str | None, clinic: str):
 	if practitioner and not works_at(practitioner, clinic):
 		frappe.throw(
-			_("{0} does not work at {1}.").format(frappe.db.get_value("Practitioner", practitioner, "practitioner_name"), clinic)
+			_("{0} does not work at {1}.").format(
+				frappe.db.get_value("Practitioner", practitioner, "practitioner_name"), clinic
+			)
 		)
 
 
@@ -237,4 +253,6 @@ def add_unique_index(doctype: str, fields: list[str], name: str):
 	)
 	if not exists:
 		frappe.db.commit()  # nosemgrep: DDL commits on its own; nothing is left half done.
-		frappe.db.sql_ddl(f"alter table `tab{doctype}` add unique `{name}` ({', '.join(f'`{field}`' for field in fields)})")
+		frappe.db.sql_ddl(
+			f"alter table `tab{doctype}` add unique `{name}` ({', '.join(f'`{field}`' for field in fields)})"
+		)

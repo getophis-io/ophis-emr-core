@@ -33,7 +33,11 @@ class TestNotify(IntegrationTestCase):
 		SENT.clear()
 
 	def test_nothing_is_sent_without_a_sender(self):
-		with patch.object(frappe, "get_hooks", side_effect=lambda name=None, *a, **k: [] if name in SENDERS else real_get_hooks(name, *a, **k)):
+		with patch.object(
+			frappe,
+			"get_hooks",
+			side_effect=lambda name=None, *a, **k: [] if name in SENDERS else real_get_hooks(name, *a, **k),
+		):
 			notify.notify(["someone@example.com"], "Hello", "Patient", "X")
 		self.assertEqual(SENT, [])
 
@@ -50,5 +54,7 @@ class TestNotify(IntegrationTestCase):
 		appointment.reload()
 		self.assertEqual(len(SENT), 1)
 		kind, encounter, text, nurse, to_physicians = SENT[0]
-		self.assertEqual((kind, encounter, nurse, to_physicians), ("visit", appointment.encounter, None, False))
+		self.assertEqual(
+			(kind, encounter, nurse, to_physicians), ("visit", appointment.encounter, None, False)
+		)
 		self.assertIn("{0}", text)

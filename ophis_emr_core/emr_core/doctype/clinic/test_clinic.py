@@ -15,12 +15,16 @@ class TestClinic(IntegrationTestCase):
 		self.assertTrue(frappe.db.exists("Branch", clinic.name))
 
 	def test_an_existing_branch_becomes_the_clinic(self):
-		branch = frappe.get_doc({"doctype": "Branch", "branch": f"Branch {frappe.generate_hash(length=6)}"}).insert()
+		branch = frappe.get_doc(
+			{"doctype": "Branch", "branch": f"Branch {frappe.generate_hash(length=6)}"}
+		).insert()
 		self.assertEqual(make_clinic(clinic_name=branch.name).branch, branch.name)
 
 	def test_time_zone_defaults_to_the_province(self):
 		self.assertEqual(make_clinic(province="NS").time_zone, "America/Halifax")
-		self.assertEqual(make_clinic(province="ON", time_zone="America/Winnipeg").time_zone, "America/Winnipeg")
+		self.assertEqual(
+			make_clinic(province="ON", time_zone="America/Winnipeg").time_zone, "America/Winnipeg"
+		)
 		self.assertRaises(frappe.ValidationError, make_clinic, time_zone="Atlantic/Nowhere")
 
 	def test_a_clinic_is_not_deleted_or_moved(self):

@@ -22,7 +22,9 @@ def make_user(email: str, roles: tuple[str, ...], first_name: str = "Test") -> s
 	return email
 
 
-def make_practitioner(user: str | None = None, clinic: str | None = None, billing: dict | None = None, **kwargs):
+def make_practitioner(
+	user: str | None = None, clinic: str | None = None, billing: dict | None = None, **kwargs
+):
 	"""A practitioner at `clinic` (or the user's own), billing the clinic's province with
 	`billing`, province-wide values such as {"billing_number": ..., "specialty_code": ...}."""
 	values = {
@@ -39,7 +41,9 @@ def make_practitioner(user: str | None = None, clinic: str | None = None, billin
 	if billing:
 		from ophis_emr_core.emr_core import billing_profiles, clinics
 
-		province = frappe.db.get_value("Clinic", clinics.get_primary_clinic("Practitioner", doc.name), "province")
+		province = frappe.db.get_value(
+			"Clinic", clinics.get_primary_clinic("Practitioner", doc.name), "province"
+		)
 		billing_profiles.set_values(doc.name, province, billing)
 	return doc
 
@@ -63,7 +67,9 @@ def make_patient(clinic: str | None = None, **kwargs):
 def make_appointment(patient: str, practitioner: str, **kwargs):
 	# Appointments are for rostered patients with their own practitioner, so the patient is
 	# rostered with this one first.
-	frappe.db.set_value("Patient", patient, {"enrolment_status": "Rostered", "primary_practitioner": practitioner})
+	frappe.db.set_value(
+		"Patient", patient, {"enrolment_status": "Rostered", "primary_practitioner": practitioner}
+	)
 	values = {
 		"doctype": "Patient Appointment",
 		"patient": patient,
@@ -80,7 +86,11 @@ def make_room(clinic: str | None = None, **kwargs):
 	"""A room at `clinic`, or the user's own clinic."""
 	from ophis_emr_core.emr_core.clinics import get_default_clinic
 
-	values = {"doctype": "Room", "room_name": f"Room {frappe.generate_hash(length=6)}", "clinic": clinic or get_default_clinic()}
+	values = {
+		"doctype": "Room",
+		"room_name": f"Room {frappe.generate_hash(length=6)}",
+		"clinic": clinic or get_default_clinic(),
+	}
 	values.update(kwargs)
 	return frappe.get_doc(values).insert(ignore_permissions=True)
 
@@ -90,7 +100,8 @@ def make_clinic(**kwargs):
 	values = {
 		"doctype": "Clinic",
 		"clinic_name": f"Clinic {frappe.generate_hash(length=6)}",
-		"company": frappe.defaults.get_global_default("company") or frappe.db.get_value("Company", {}, "name"),
+		"company": frappe.defaults.get_global_default("company")
+		or frappe.db.get_value("Company", {}, "name"),
 		"province": "ON",
 	}
 	values.update(kwargs)

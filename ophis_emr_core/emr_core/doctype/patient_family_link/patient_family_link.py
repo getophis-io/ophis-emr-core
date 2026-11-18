@@ -80,5 +80,10 @@ def set_family(patient: str, members: list[dict]):
 	for other, relationship in wanted.items():
 		if other not in current or current[other]["relationship"] != relationship:
 			frappe.get_doc(
-				{"doctype": "Patient Family Link", "patient": patient, "related_patient": other, "relationship": relationship}
+				{
+					"doctype": "Patient Family Link",
+					"patient": patient,
+					"related_patient": other,
+					"relationship": relationship,
+				}
 			).insert()

@@ -1,7 +1,7 @@
 import frappe
 from frappe.tests import IntegrationTestCase
 
-from ophis_emr_core.emr_core import billing_profiles, clinics
+from ophis_emr_core.emr_core import billing_profiles
 from ophis_emr_core.emr_core.testing import make_clinic, make_practitioner
 
 IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "Company", "Employee"]
@@ -69,8 +69,12 @@ class TestPractitionerBillingProfile(IntegrationTestCase):
 			billing_profiles.get_values(self.practitioner, clinic=self.north.name),
 			{"billing_number": "123456", "group_number": "AB12"},
 		)
-		self.assertEqual(billing_profiles.get_value(self.practitioner, "group_number", clinic=self.downtown.name), "CD34")
-		self.assertEqual(billing_profiles.get_value(self.practitioner, "billing_number", province="ON"), "123456")
+		self.assertEqual(
+			billing_profiles.get_value(self.practitioner, "group_number", clinic=self.downtown.name), "CD34"
+		)
+		self.assertEqual(
+			billing_profiles.get_value(self.practitioner, "billing_number", province="ON"), "123456"
+		)
 
 	def test_an_inactive_profile_is_not_billed_with(self):
 		profile = make_profile(self.practitioner)
@@ -80,7 +84,9 @@ class TestPractitionerBillingProfile(IntegrationTestCase):
 
 	def test_set_values_makes_or_updates_the_profile(self):
 		billing_profiles.set_values(self.practitioner, "ON", {"billing_number": "123456"})
-		billing_profiles.set_values(self.practitioner, "ON", {"group_number": "ZZ99"}, clinic=self.downtown.name)
+		billing_profiles.set_values(
+			self.practitioner, "ON", {"group_number": "ZZ99"}, clinic=self.downtown.name
+		)
 		billing_profiles.set_values(self.practitioner, "ON", {"billing_number": "654321"})
 		profile = frappe.get_doc("Practitioner Billing Profile", f"{self.practitioner}-ON")
 		self.assertEqual(

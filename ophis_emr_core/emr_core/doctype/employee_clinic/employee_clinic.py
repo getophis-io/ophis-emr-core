@@ -15,7 +15,9 @@ class EmployeeClinic(ClinicLink):
 			frappe.throw(_("To cannot be before From."))
 		company = frappe.db.get_value("Employee", self.employee, "company")
 		if company != frappe.db.get_value("Clinic", self.clinic, "company"):
-			frappe.throw(_("{0} is not a clinic of {1}, the employee's company.").format(self.clinic, company))
+			frappe.throw(
+				_("{0} is not a clinic of {1}, the employee's company.").format(self.clinic, company)
+			)
 
 	def follow_primary(self, clinic):
 		# The primary clinic is the employee's Branch, which HRMS uses for shifts and payroll.

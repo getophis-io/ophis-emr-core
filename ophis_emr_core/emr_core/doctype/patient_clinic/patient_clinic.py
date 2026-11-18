@@ -12,7 +12,8 @@ class PatientClinic(ClinicLink):
 		super().validate()
 		self.chart_number = (self.chart_number or "").strip() or None
 		if self.chart_number and frappe.db.exists(
-			"Patient Clinic", {"clinic": self.clinic, "chart_number": self.chart_number, "name": ("!=", self.name)}
+			"Patient Clinic",
+			{"clinic": self.clinic, "chart_number": self.chart_number, "name": ("!=", self.name)},
 		):
 			frappe.throw(_("Chart number {0} is already used at {1}.").format(self.chart_number, self.clinic))
 

@@ -89,7 +89,6 @@ def province_from_text(text: str | None) -> str | None:
 	return next((code for code, name in PROVINCES.items() if name.lower() == text.lower()), None)
 
 
-
 @dataclass(frozen=True)
 class BillingKey:
 	"""One value a practitioner bills a province's plan with, as a billing profile row holds it.

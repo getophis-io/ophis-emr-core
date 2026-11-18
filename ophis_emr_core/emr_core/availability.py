@@ -81,7 +81,10 @@ def get_practitioner_availability(practitioners: list[dict], now=None) -> dict:
 	checked_in = get_checked_in([row["employee"] for row in practitioners if row.get("employee")], now)
 	return {
 		row["name"]: get_availability(
-			row["name"], now, uses_time_clock=bool(row.get("employee")) and clock, since=checked_in.get(row.get("employee"))
+			row["name"],
+			now,
+			uses_time_clock=bool(row.get("employee")) and clock,
+			since=checked_in.get(row.get("employee")),
 		)
 		if row.get("status") == "Active"
 		else dict(OFF)

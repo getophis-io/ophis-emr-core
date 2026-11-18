@@ -7,6 +7,7 @@ from ophis_emr_core.emr_core.testing import make_patient
 # need to generate ERPNext test fixtures for the standard DocTypes this one links to.
 IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "Company", "Employee"]
 
+
 class TestVitalSigns(IntegrationTestCase):
 	def record(self, **kwargs):
 		return frappe.get_doc({"doctype": "Vital Signs", "patient": make_patient().name, **kwargs}).insert()

@@ -142,7 +142,11 @@ def render_pdf(order) -> bytes:
 			parent = widget["/Parent"].get_object() if "/Parent" in widget else None
 			# A checkbox in a named group is "group.name"; a radio button has only its group's name.
 			if "/T" in widget:
-				name = f"{parent['/T']}.{widget['/T']}" if parent is not None and "/T" in parent else widget["/T"]
+				name = (
+					f"{parent['/T']}.{widget['/T']}"
+					if parent is not None and "/T" in parent
+					else widget["/T"]
+				)
 				field = widget
 			elif parent is not None:
 				name, field = parent.get("/T"), parent
@@ -168,7 +172,9 @@ def render_pdf(order) -> bytes:
 	writer.set_need_appearances_writer(True)
 
 	if permissions is not None:
-		writer.encrypt(user_password="", owner_password=secrets.token_urlsafe(24), permissions_flag=permissions)
+		writer.encrypt(
+			user_password="", owner_password=secrets.token_urlsafe(24), permissions_flag=permissions
+		)
 	output = io.BytesIO()
 	writer.write(output)
 	return output.getvalue()

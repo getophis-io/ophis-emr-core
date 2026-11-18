@@ -9,6 +9,7 @@ from ophis_emr_core.emr_core.testing import make_health_card_number, make_patien
 # need to generate ERPNext test fixtures for the standard DocTypes this one links to.
 IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "Company", "Employee"]
 
+
 class TestPatient(IntegrationTestCase):
 	def test_full_name_and_normalization(self):
 		number = make_health_card_number()

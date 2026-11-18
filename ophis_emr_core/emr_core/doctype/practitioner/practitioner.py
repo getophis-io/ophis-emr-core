@@ -1,4 +1,3 @@
-import frappe
 from frappe.model.document import Document
 
 from ophis_emr_core.emr_core import billing_profiles, clinics

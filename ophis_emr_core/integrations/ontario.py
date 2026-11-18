@@ -31,7 +31,11 @@ class HealthCardValidation(Integration):
 			if not patient.health_card_number:
 				return outcome(False, "SIM-NO-NUMBER", "No health number on record.")
 			if patient.health_card_province != "ON":
-				return outcome(False, "SIM-NOT-ONTARIO", "Not an Ontario health card; this service checks Ontario cards only.")
+				return outcome(
+					False,
+					"SIM-NOT-ONTARIO",
+					"Not an Ontario health card; this service checks Ontario cards only.",
+				)
 			if patient.health_card_expiry and getdate(patient.health_card_expiry) < getdate(today()):
 				return outcome(False, "SIM-EXPIRED", "The card on record has expired.")
 			return outcome(True, "SIM-VALID", "Health card passed validation.")
@@ -54,7 +58,9 @@ class ClaimsIntegration(Integration):
 
 	def check(self, claim):
 		if claim.payer != self.payer:
-			frappe.throw(_("{0} claims are not sent through {1}.").format(claim.payer, self.title), IntegrationError)
+			frappe.throw(
+				_("{0} claims are not sent through {1}.").format(claim.payer, self.title), IntegrationError
+			)
 
 	def submit(self, claim) -> dict:
 		self.check(claim)
@@ -63,7 +69,10 @@ class ClaimsIntegration(Integration):
 
 		result = self.run(
 			"Submit claim",
-			lambda: {"reference": f"SIM-{frappe.generate_hash(length=10).upper()}", "message": f"Received ({SIMULATED})"},
+			lambda: {
+				"reference": f"SIM-{frappe.generate_hash(length=10).upper()}",
+				"message": f"Received ({SIMULATED})",
+			},
 			claim,
 		)
 		self.write(
@@ -171,8 +180,21 @@ class Olis(Integration):
 			items = []
 			for test in [line.strip() for line in (order.tests or "").splitlines() if line.strip()]:
 				sample = next((value for key, value in self.SAMPLES.items() if key in test.lower()), None)
-				value, units, reference_range, flag = sample or ("Result on file with the laboratory", "", "", "")
-				items.append({"test_name": test, "value": value, "units": units, "reference_range": reference_range, "flag": flag})
+				value, units, reference_range, flag = sample or (
+					"Result on file with the laboratory",
+					"",
+					"",
+					"",
+				)
+				items.append(
+					{
+						"test_name": test,
+						"value": value,
+						"units": units,
+						"reference_range": reference_range,
+						"flag": flag,
+					}
+				)
 			result = frappe.get_doc(
 				{
 					"doctype": "Lab Result",
@@ -289,7 +311,9 @@ class DigitalHealthDrugRepository(Integration):
 
 	def history(self, patient) -> dict:
 		"""{"events": every dispense, newest first, "drugs": one row per drug, "message"}."""
-		result = self.run("Drug history", lambda: self.simulate(patient), patient, live=lambda: self.fetch(patient))
+		result = self.run(
+			"Drug history", lambda: self.simulate(patient), patient, live=lambda: self.fetch(patient)
+		)
 		result["drugs"] = self.summarize(patient, result["events"])
 		return result
 
@@ -340,7 +364,10 @@ class DigitalHealthDrugRepository(Integration):
 		if not self.settings.endpoint:
 			frappe.throw(_("{0} has no endpoint URL set.").format(self.title), IntegrationError)
 		if not patient.health_card_number:
-			frappe.throw(_("Drug history is looked up by health number, and this patient has none on record."), IntegrationError)
+			frappe.throw(
+				_("Drug history is looked up by health number, and this patient has none on record."),
+				IntegrationError,
+			)
 
 		extra = self.get_extra_settings()
 		headers = {"Accept": "application/fhir+json", **(extra.get("headers") or {})}
@@ -368,7 +395,9 @@ class DigitalHealthDrugRepository(Integration):
 			try:
 				if next_page:
 					# The repository builds this link; it is followed as given.
-					return requests.get(next_page, headers=headers, cert=certificate, timeout=self.TIMEOUT_SECONDS)
+					return requests.get(
+						next_page, headers=headers, cert=certificate, timeout=self.TIMEOUT_SECONDS
+					)
 				return requests.post(
 					f"{self.settings.endpoint.rstrip('/')}/Bundle/_search",
 					data=search,
@@ -378,7 +407,10 @@ class DigitalHealthDrugRepository(Integration):
 				)
 			except requests.RequestException as error:
 				# The exception text can carry the request, and with it the health number.
-				frappe.throw(_("{0} could not be reached ({1}).").format(self.title, type(error).__name__), IntegrationError)
+				frappe.throw(
+					_("{0} could not be reached ({1}).").format(self.title, type(error).__name__),
+					IntegrationError,
+				)
 
 		events, notices, blocked = [], [], False
 		next_page = None
@@ -387,14 +419,19 @@ class DigitalHealthDrugRepository(Integration):
 			if response.status_code == 404:
 				frappe.throw(_("{0} does not know this health number.").format(self.title), IntegrationError)
 			if response.status_code != 200:
-				frappe.throw(_("{0} answered with HTTP {1}.").format(self.title, response.status_code), IntegrationError)
+				frappe.throw(
+					_("{0} answered with HTTP {1}.").format(self.title, response.status_code),
+					IntegrationError,
+				)
 
 			bundle = response.json()
 			page = parse_dispense_search(bundle, self.DIN_SYSTEM)
 			events += page["events"]
 			notices += [notice for notice in page["notices"] if notice not in notices]
 			blocked = blocked or page["blocked"]
-			next_page = next((link.get("url") for link in bundle.get("link", []) if link.get("relation") == "next"), None)
+			next_page = next(
+				(link.get("url") for link in bundle.get("link", []) if link.get("relation") == "next"), None
+			)
 			if not next_page:
 				break
 
@@ -413,7 +450,9 @@ class DigitalHealthDrugRepository(Integration):
 		def on_chart(drug):
 			for medication in chart:
 				name = (medication.medication_name or "").strip().lower()
-				if (drug["din"] and drug["din"] == medication.din) or (name and name.split()[0] in drug["drug"].lower()):
+				if (drug["din"] and drug["din"] == medication.din) or (
+					name and name.split()[0] in drug["drug"].lower()
+				):
 					return medication.status
 			return None
 
@@ -425,7 +464,9 @@ class DigitalHealthDrugRepository(Integration):
 		for drug in drugs.values():
 			drug.pop("dispensed_on")
 			supply = frappe.utils.cint(drug["days_supply"])
-			drug["runs_out_on"] = str(add_days(drug["last_dispensed"], supply)) if supply and drug["last_dispensed"] else None
+			drug["runs_out_on"] = (
+				str(add_days(drug["last_dispensed"], supply)) if supply and drug["last_dispensed"] else None
+			)
 			drug["chart_status"] = on_chart(drug)
 		return list(drugs.values())
 
@@ -467,7 +508,11 @@ def parse_dispense_search(searchset: dict, din_system: str) -> dict:
 					blocked = blocked or CONSENT_BLOCKED in codes
 					text = details.get("text") or issue.get("diagnostics")
 					# "No matches" and the like are information about the search, not something to act on.
-					if text and (consent or issue.get("severity") in ("warning", "error", "fatal")) and text not in notices:
+					if (
+						text
+						and (consent or issue.get("severity") in ("warning", "error", "fatal"))
+						and text not in notices
+					):
 						notices.append(text)
 			elif kind == "MedicationDispense":
 				events.append(read_dispense(resource, index, din_system))
@@ -489,7 +534,11 @@ def read_dispense(dispense: dict, index: dict, din_system: str) -> dict:
 			return name
 		return name.get("text") or " ".join([*name.get("given", []), name.get("family") or ""]).strip()
 
-	concept = dispense.get("medicationCodeableConcept") or resolve(dispense.get("medicationReference")).get("code") or {}
+	concept = (
+		dispense.get("medicationCodeableConcept")
+		or resolve(dispense.get("medicationReference")).get("code")
+		or {}
+	)
 	codings = concept.get("coding") or []
 	din = next((coding.get("code") for coding in codings if coding.get("system") == din_system), "")
 
@@ -509,13 +558,18 @@ def read_dispense(dispense: dict, index: dict, din_system: str) -> dict:
 	quantity = dispense.get("quantity") or {}
 	return {
 		"dispensed_on": (dispense.get("whenPrepared") or dispense.get("whenHandedOver") or "")[:10],
-		"drug": concept.get("text") or next((coding.get("display") for coding in codings if coding.get("display")), "") or "Unnamed drug",
+		"drug": concept.get("text")
+		or next((coding.get("display") for coding in codings if coding.get("display")), "")
+		or "Unnamed drug",
 		"din": din or "",
 		"quantity": quantity.get("value"),
 		"quantity_unit": quantity.get("unit") or "",
 		"days_supply": (dispense.get("daysSupply") or {}).get("value"),
 		"pharmacy": pharmacy or actor.get("display") or (dispense.get("location") or {}).get("display") or "",
-		"prescriber": person_name(prescriber) or requester.get("display") or prescription.get("display") or "",
+		"prescriber": person_name(prescriber)
+		or requester.get("display")
+		or prescription.get("display")
+		or "",
 		"directions": ((dispense.get("dosageInstruction") or [{}])[0]).get("text") or "",
 	}
 

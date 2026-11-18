@@ -11,7 +11,8 @@ import frappe
 def get_profile_name(practitioner: str, province: str) -> str | None:
 	"""The practitioner's active profile for a province."""
 	return frappe.db.get_value(
-		"Practitioner Billing Profile", {"practitioner": practitioner, "province": province, "status": "Active"}
+		"Practitioner Billing Profile",
+		{"practitioner": practitioner, "province": province, "status": "Active"},
 	)
 
 
@@ -35,7 +36,9 @@ def get_values(practitioner: str, province: str | None = None, clinic: str | Non
 	return values
 
 
-def get_value(practitioner: str, key: str, province: str | None = None, clinic: str | None = None) -> str | None:
+def get_value(
+	practitioner: str, key: str, province: str | None = None, clinic: str | None = None
+) -> str | None:
 	return get_values(practitioner, province, clinic).get(key)
 
 
@@ -44,11 +47,15 @@ def set_values(practitioner: str, province: str, values: dict[str, str], clinic:
 
 	`clinic` gives the values as that clinic's own; without it they are province-wide.
 	"""
-	name = frappe.db.get_value("Practitioner Billing Profile", {"practitioner": practitioner, "province": province})
+	name = frappe.db.get_value(
+		"Practitioner Billing Profile", {"practitioner": practitioner, "province": province}
+	)
 	profile = (
 		frappe.get_doc("Practitioner Billing Profile", name)
 		if name
-		else frappe.get_doc({"doctype": "Practitioner Billing Profile", "practitioner": practitioner, "province": province})
+		else frappe.get_doc(
+			{"doctype": "Practitioner Billing Profile", "practitioner": practitioner, "province": province}
+		)
 	)
 	for key, value in values.items():
 		if not value:
@@ -62,5 +69,7 @@ def set_values(practitioner: str, province: str, values: dict[str, str], clinic:
 
 
 def delete_profiles(practitioner: str):
-	for name in frappe.get_all("Practitioner Billing Profile", filters={"practitioner": practitioner}, pluck="name"):
+	for name in frappe.get_all(
+		"Practitioner Billing Profile", filters={"practitioner": practitioner}, pluck="name"
+	):
 		frappe.delete_doc("Practitioner Billing Profile", name, ignore_permissions=True)

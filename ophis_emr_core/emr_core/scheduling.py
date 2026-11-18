@@ -51,7 +51,10 @@ def get_open_times(opens, closes, minutes: int, busy: list[tuple], not_before) -
 	times = []
 	while len(times) < SLOTS_PER_DAY and add_to_date(start, minutes=minutes) <= closes:
 		end = add_to_date(start, minutes=minutes)
-		clash = next((booked_end for booked_start, booked_end in busy if booked_start < end and booked_end > start), None)
+		clash = next(
+			(booked_end for booked_start, booked_end in busy if booked_start < end and booked_end > start),
+			None,
+		)
 		if clash:
 			# Jump to the end of the booking in the way, back on the grid.
 			start = on_grid(clash)

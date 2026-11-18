@@ -18,7 +18,9 @@ class TestEncounter(IntegrationTestCase):
 		self.encounter.complete()
 		self.assertEqual(self.encounter.status, "Completed")
 		self.assertIsNotNone(self.encounter.completed_on)
-		self.assertEqual(frappe.db.get_value("Patient Appointment", self.appointment.name, "status"), "Completed")
+		self.assertEqual(
+			frappe.db.get_value("Patient Appointment", self.appointment.name, "status"), "Completed"
+		)
 		self.assertRaises(frappe.ValidationError, self.encounter.complete)
 
 	def test_cannot_complete_with_unsigned_notes(self):
