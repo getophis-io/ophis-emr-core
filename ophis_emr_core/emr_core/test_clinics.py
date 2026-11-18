@@ -6,6 +6,7 @@ from ophis_emr_core.emr_core.rooms import get_free_rooms
 from ophis_emr_core.emr_core.testing import (
 	make_appointment,
 	make_clinic,
+	make_company,
 	make_patient,
 	make_practitioner,
 	make_room,
@@ -150,8 +151,7 @@ class TestClinicLinks(IntegrationTestCase):
 		self.assertEqual(clinics.get_primary_clinic("Employee", employee.name), self.north.name)
 
 	def test_an_employee_works_only_at_their_company_clinics(self):
-		other = frappe.db.get_value("Company", {"name": ("!=", self.north.company)}, "name")
-		employee = make_employee(other)
+		employee = make_employee(make_company().name)
 		self.assertRaises(
 			frappe.ValidationError, clinics.add_to_clinic, "Employee", employee.name, self.north.name
 		)

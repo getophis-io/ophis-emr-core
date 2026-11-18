@@ -131,6 +131,22 @@ def make_room(clinic: str | None = None, **kwargs):
 	return frappe.get_doc(values).insert(ignore_permissions=True)
 
 
+def make_company(**kwargs):
+	"""A Canadian company with its own chart of accounts."""
+	suffix = frappe.generate_hash(length=5).upper()
+	values = {
+		"doctype": "Company",
+		"company_name": f"Test Company {suffix}",
+		"abbr": f"T{suffix}",
+		"country": "Canada",
+		"default_currency": "CAD",
+		"create_chart_of_accounts_based_on": "Standard Template",
+		"chart_of_accounts": "Standard with Numbers",
+	}
+	values.update(kwargs)
+	return frappe.get_doc(values).insert(ignore_permissions=True)
+
+
 def make_clinic(**kwargs):
 	"""A clinic, and so a Branch, of an existing company."""
 	values = {
