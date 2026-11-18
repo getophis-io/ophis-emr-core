@@ -5,7 +5,9 @@ from ophis_emr_core.emr_core import provinces
 from ophis_emr_core.emr_core.testing import make_clinic
 from ophis_emr_core.install import ensure_default_clinic
 
-IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "Company", "Employee"]
+# Branch and Holiday List belong to ERPNext: loading their test modules imports erpnext.tests.utils,
+# which inserts ERPNext's own (Indian, INR) fixtures and fails on a site set up for Canada.
+IGNORE_TEST_RECORD_DEPENDENCIES = ["User", "Company", "Employee", "Branch", "Holiday List"]
 
 
 class TestClinic(IntegrationTestCase):
