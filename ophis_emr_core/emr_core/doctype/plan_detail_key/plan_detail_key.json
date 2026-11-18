@@ -1,0 +1,84 @@
+{
+ "actions": [],
+ "creation": "2026-11-18 20:00:00.000000",
+ "description": "The keys a plan's details take, answered from the core's code (PlanKey, set against each plan in patient_billing and the province modules). Virtual: no table, nothing stored or synced; the desk's Key list on plan details reads it.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "key",
+  "label",
+  "column_break_key",
+  "plan"
+ ],
+ "fields": [
+  {
+   "fieldname": "key",
+   "fieldtype": "Data",
+   "label": "Key",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "label": "Label",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_key",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "plan",
+   "fieldtype": "Link",
+   "label": "Plan",
+   "options": "Payer",
+   "read_only": 1,
+   "description": "Filter: the plan (payer) whose keys to list"
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-18 23:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Plan Detail Key",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1
+  }
+ ],
+ "read_only": 1,
+ "row_format": "Dynamic",
+ "search_fields": "label",
+ "sort_field": "key",
+ "sort_order": "ASC",
+ "states": [],
+ "title_field": "label",
+ "is_virtual": 1
+}

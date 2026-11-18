@@ -8,7 +8,7 @@ HEALTH_CARD_VERSION_PATTERN = re.compile(r"^[A-Z]{1,2}$")
 
 
 def passes_luhn(digits: str) -> bool:
-	"""Mod-10 check used by the Ontario health number's final digit."""
+	"""Mod-10 check, used by the final digit of Ontario's health number among others."""
 	total = 0
 	for position, char in enumerate(reversed(digits)):
 		value = int(char)
@@ -21,11 +21,15 @@ def passes_luhn(digits: str) -> bool:
 
 
 def normalize_health_card_number(number: str | None, province: str | None) -> str | None:
-	"""Strip formatting and validate the parts of a health card number we can check offline.
+	"""Strip formatting, then check the number in the issuing province's format.
 
-	Only the Ontario format (10 digits, mod-10 check digit) is validated strictly. This is a
-	format check and says nothing about eligibility, which needs Health Card Validation (HCV).
+	Any province's number is letters and digits. A province module that knows its card's format
+	checks it offline (`check_health_card_number` in `provinces/<province>.py`; Ontario's is 10
+	digits with a mod-10 check digit). This says nothing about eligibility, which is the
+	province's validation service's to say.
 	"""
+	from ophis_emr_core.emr_core import provinces
+
 	if not number:
 		return None
 
@@ -33,12 +37,9 @@ def normalize_health_card_number(number: str | None, province: str | None) -> st
 	if not cleaned.isalnum():
 		frappe.throw(_("Health Card Number can only contain letters and digits."))
 
-	if province == "ON":
-		if not (cleaned.isdigit() and len(cleaned) == 10):
-			frappe.throw(_("An Ontario Health Card Number must be 10 digits."))
-		if not passes_luhn(cleaned):
-			frappe.throw(_("Health Card Number {0} is not a valid Ontario health number.").format(cleaned))
-
+	check = getattr(provinces.get_province_module(province), "check_health_card_number", None)
+	if check:
+		check(cleaned)
 	return cleaned
 
 

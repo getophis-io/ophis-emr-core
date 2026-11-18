@@ -4,6 +4,7 @@ from frappe.model.document import Document
 from frappe.model.naming import getseries
 from frappe.utils import cint, flt, now_datetime
 
+from ophis_emr_core.emr_core import patient_billing
 from ophis_emr_core.emr_core.chart import validate_encounter
 
 # Routes the chart's medication list knows; anything else is recorded as "Other".
@@ -82,7 +83,7 @@ class Prescription(Document):
 						"A prescription for a monitored drug needs the prescriber's college registration number."
 					)
 				)
-			if not frappe.db.get_value("Patient", self.patient, "health_card_number"):
+			if not patient_billing.get_health_card_profile(self.patient):
 				frappe.throw(
 					_(
 						"A prescription for a monitored drug needs a health card number on the patient's record."

@@ -56,14 +56,13 @@ PREFIX = "phi1:"
 
 ENCRYPTED_FIELDS = {
 	"Patient": (
-		"health_card_number",
-		"health_card_version",
-		"health_card_expiry",
 		"mobile_phone",
 		"home_phone",
 		"email",
 	),
 	"Patient Emergency Contact": ("phone", "email", "address"),
+	"Patient Billing Profile": ("expiry_date",),
+	"Patient Billing Profile Value": ("value",),
 }
 
 # Other clinic apps add their own fields through the `phi_encrypted_fields` hook, a dict of
@@ -72,11 +71,12 @@ ENCRYPTED_FIELDS = {
 # Blind index column for each encrypted field that is looked up by value.
 INDEX_FIELDS = {
 	"Patient": {
-		"health_card_number": "health_card_number_index",
 		"mobile_phone": "mobile_phone_index",
 		"home_phone": "home_phone_index",
 		"email": "email_index",
 	},
+	# A health card is found by its number, a coverage by its membership number.
+	"Patient Billing Profile Value": {"value": "value_index"},
 }
 
 # Longest plain value that still fits a 255-character column once encrypted.

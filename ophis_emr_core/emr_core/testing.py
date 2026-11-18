@@ -84,20 +84,42 @@ def make_practitioner(
 	return doc
 
 
-def make_patient(clinic: str | None = None, **kwargs):
+def make_patient(
+	clinic: str | None = None,
+	health_card_province: str | None = "ON",
+	health_card_number: str | None = "random",
+	health_card_version: str | None = None,
+	health_card_expiry: str | None = None,
+	**kwargs,
+):
+	"""A patient, with a made-up Ontario health card unless `health_card_number=None`. The card is
+	their provincial health plan profile; `patient.health_card` is what `get_health_card` gives."""
+	from ophis_emr_core.emr_core import patient_billing
+
 	values = {
 		"doctype": "Patient",
 		"first_name": "Test",
 		"last_name": frappe.generate_hash(length=6),
 		"date_of_birth": "1980-01-15",
 		"sex": "Female",
-		"health_card_province": "ON",
-		"health_card_number": make_health_card_number(),
 	}
 	values.update(kwargs)
 	doc = frappe.get_doc(values)
 	doc.flags.clinic = clinic
-	return doc.insert(ignore_permissions=True)
+	doc.insert(ignore_permissions=True)
+	if health_card_number == "random":
+		health_card_number = make_health_card_number()
+	if health_card_number:
+		patient_billing.set_health_card(
+			doc.name,
+			health_card_province,
+			health_card_number,
+			health_card_version,
+			health_card_expiry,
+			part_of_creation=True,
+		)
+	doc.health_card = patient_billing.get_health_card(doc.name)
+	return doc
 
 
 def make_appointment(patient: str, practitioner: str, **kwargs):
@@ -113,6 +135,17 @@ def make_appointment(patient: str, practitioner: str, **kwargs):
 		"appointment_date": "2030-01-07",
 		"start_time": "09:00:00",
 		"duration": 15,
+	}
+	values.update(kwargs)
+	return frappe.get_doc(values).insert(ignore_permissions=True)
+
+
+def make_payer(payer_type: str = "Private", **kwargs):
+	"""A payer with a made-up name."""
+	values = {
+		"doctype": "Payer",
+		"payer_name": f"Test Payer {frappe.generate_hash(length=6)}",
+		"payer_type": payer_type,
 	}
 	values.update(kwargs)
 	return frappe.get_doc(values).insert(ignore_permissions=True)

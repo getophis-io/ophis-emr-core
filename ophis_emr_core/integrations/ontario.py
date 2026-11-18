@@ -11,6 +11,7 @@ import frappe
 from frappe import _
 from frappe.utils import add_days, getdate, now_datetime, today
 
+from ophis_emr_core.emr_core import patient_billing
 from ophis_emr_core.integrations import Integration, IntegrationError
 
 SIMULATED = "Simulated"
@@ -27,16 +28,19 @@ class HealthCardValidation(Integration):
 	)
 
 	def validate(self, patient) -> dict:
+		"""Check the patient's health card; the outcome is recorded on its billing profile."""
+		card = patient_billing.get_health_card(patient.name)
+
 		def simulate():
-			if not patient.health_card_number:
+			if not card or not card.number:
 				return outcome(False, "SIM-NO-NUMBER", "No health number on record.")
-			if patient.health_card_province != "ON":
+			if card.province != "ON":
 				return outcome(
 					False,
 					"SIM-NOT-ONTARIO",
 					"Not an Ontario health card; this service checks Ontario cards only.",
 				)
-			if patient.health_card_expiry and getdate(patient.health_card_expiry) < getdate(today()):
+			if card.expiry_date and getdate(card.expiry_date) < getdate(today()):
 				return outcome(False, "SIM-EXPIRED", "The card on record has expired.")
 			return outcome(True, "SIM-VALID", "Health card passed validation.")
 
@@ -44,10 +48,13 @@ class HealthCardValidation(Integration):
 			return {"valid": valid, "code": code, "message": f"{message} ({SIMULATED})"}
 
 		result = self.run("Validate health card", simulate, patient)
-		patient.health_card_status = "Valid" if result["valid"] else "Invalid"
-		patient.health_card_checked_on = now_datetime()
-		patient.health_card_response = f"{result['code']}: {result['message']}"[:140]
-		patient.save()
+		if card:
+			profile = frappe.get_doc(patient_billing.DOCTYPE, card.profile)
+			profile.verification_status = "Valid" if result["valid"] else "Invalid"
+			profile.verified_on = now_datetime()
+			profile.verification_response = f"{result['code']}: {result['message']}"[:140]
+			profile.flags.verifying = True
+			profile.save(ignore_permissions=True)
 		return result
 
 
@@ -367,7 +374,8 @@ class DigitalHealthDrugRepository(Integration):
 
 		if not self.settings.endpoint:
 			frappe.throw(_("{0} has no endpoint URL set.").format(self.title), IntegrationError)
-		if not patient.health_card_number:
+		card = patient_billing.get_health_card(patient.name)
+		if not card or not card.number:
 			frappe.throw(
 				_("Drug history is looked up by health number, and this patient has none on record."),
 				IntegrationError,
@@ -384,7 +392,7 @@ class DigitalHealthDrugRepository(Integration):
 		system = extra.get("patient_identifier_system") or self.HEALTH_NUMBER_SYSTEM
 		search = {
 			"composition.type": self.DISPENSE_DOCUMENT,
-			"composition.patient.identifier": f"{system}|{patient.health_card_number}",
+			"composition.patient.identifier": f"{system}|{card.number}",
 			"composition.patient.birthdate": str(getdate(patient.date_of_birth)),
 			"_sort": "-whenprepared",
 			"_count": self.PAGE_SIZE,

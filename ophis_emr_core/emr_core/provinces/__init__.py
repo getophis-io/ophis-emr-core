@@ -11,6 +11,7 @@ from dataclasses import dataclass
 
 import frappe
 from frappe import _
+from frappe.utils import getdate
 
 PROVINCES = {
 	"AB": "Alberta",
@@ -90,32 +91,105 @@ def province_from_text(text: str | None) -> str | None:
 
 
 @dataclass(frozen=True)
-class BillingKey:
-	"""One value a practitioner bills a province's plan with, as a billing profile row holds it.
-
-	`per_clinic` values may differ between the practitioner's clinics in the province: a row
-	with a clinic is that clinic's value, a row without one applies to the rest.
-	"""
+class Key:
+	"""One value a billing profile holds as a key and value row."""
 
 	key: str
 	label: str
 	required: bool = False
 	pattern: str | None = None
 	hint: str = ""
-	per_clinic: bool = False
 
 	def check(self, value: str):
 		if self.pattern and not re.fullmatch(self.pattern, value):
 			frappe.throw(_("{0} {1} is not valid: {2}.").format(self.label, value, self.hint))
 
 
-# Provinces whose plans the core knows how to bill, by module in this package.
+@dataclass(frozen=True)
+class BillingKey(Key):
+	"""One value a practitioner bills a province's plan with.
+
+	`per_clinic` values may differ between the practitioner's clinics in the province: a row
+	with a clinic is that clinic's value, a row without one applies to the rest.
+	"""
+
+	per_clinic: bool = False
+
+
+@dataclass(frozen=True)
+class PlanKey(Key):
+	"""One detail of a patient's coverage by a plan, such as a membership number.
+
+	`patient_field` names the Patient field a value left blank defaults to. `upper` values are
+	identifiers, kept in capitals; `date` values are kept as YYYY-MM-DD.
+	"""
+
+	patient_field: str | None = None
+	upper: bool = False
+	date: bool = False
+
+	def normalize(self, value) -> str | None:
+		value = str(value).strip() if value else ""
+		if not value:
+			return None
+		if self.date:
+			return getdate(value).isoformat()
+		return value.upper() if self.upper else value
+
+
+# Each province's health plan: the `Payer` a patient with a health card from it is covered by.
+HEALTH_PLANS = {
+	"AB": "AHCIP",
+	"BC": "MSP",
+	"MB": "Manitoba Health",
+	"NB": "NB Medicare",
+	"NL": "MCP",
+	"NS": "MSI",
+	"NT": "NWT Health Care Plan",
+	"NU": "Nunavut Health Care Plan",
+	"ON": "OHIP",
+	"PE": "Health PEI",
+	"QC": "RAMQ",
+	"SK": "Saskatchewan Health",
+	"YT": "YHCIP",
+}
+
+# A patient's coverage by any province's health plan: their health card. A province module can
+# give its own (`PLAN_KEYS`), with its formats.
+HEALTH_CARD_KEYS = [
+	PlanKey("health_card_number", "Health Card Number", required=True, upper=True),
+	PlanKey("version_code", "Version Code", upper=True),
+]
+
+# Provinces the core knows more of, by module in this package: the details of a patient's
+# coverage by its plan (`PLAN_KEYS`), and what a practitioner bills it with (`BILLING_KEYS`).
 BILLING_MODULES = {"ON": "ontario"}
+
+
+def get_province_module(province: str | None):
+	module = BILLING_MODULES.get(province or "")
+	return importlib.import_module(f"{__name__}.{module}") if module else None
 
 
 def get_billing_keys(province: str | None) -> dict[str, BillingKey]:
 	"""{key: BillingKey} for billing a province's plan, or {} where it is not supported yet."""
-	module = BILLING_MODULES.get(province or "")
-	if not module:
+	module = get_province_module(province)
+	return {key.key: key for key in module.BILLING_KEYS} if module else {}
+
+
+def get_plan_keys(province: str | None) -> dict[str, PlanKey]:
+	"""{key: PlanKey} of a patient's coverage by the province's health plan, in order."""
+	if province not in PROVINCES:
 		return {}
-	return {key.key: key for key in importlib.import_module(f"{__name__}.{module}").BILLING_KEYS}
+	module = get_province_module(province)
+	return {key.key: key for key in getattr(module, "PLAN_KEYS", None) or HEALTH_CARD_KEYS}
+
+
+def get_health_plan(province: str | None) -> str | None:
+	"""The name of the province's health plan (its `Payer`)."""
+	return HEALTH_PLANS.get(province or "")
+
+
+def get_health_plans() -> dict[str, str]:
+	"""{province: health plan} of every province."""
+	return dict(HEALTH_PLANS)

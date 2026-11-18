@@ -16,7 +16,8 @@ notifications and the like. They import this app; this app never imports any app
 - `ophis_emr_core/emr_core/` — the only module (`EMR Core`). DocTypes, `provinces/` (a clinic's
   province: a clinic is a `Branch` with a `Clinic` record), `clinics.py` (which clinics a patient,
   practitioner or employee belongs to), `billing_profiles.py` (a practitioner's billing values per
-  province; each province's keys are in `provinces/<province>.py`), `validators.py` (health card,
+  province; each province's keys are in `provinces/<province>.py`), `patient_billing.py` (a
+  patient's coverages, their health card among them: it is their provincial health plan profile), `validators.py` (health card,
   postal code), `phi.py` (encryption), `events.py` (patient changelog), `rooms.py` (occupancy),
   `chart.py` (chart summary and shared checks), `notify.py` (staff notification hooks),
   `scheduling.py` (working hours, open times), `availability.py` (who is in now), `visits.py`

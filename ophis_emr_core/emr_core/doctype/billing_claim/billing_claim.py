@@ -3,6 +3,7 @@ from frappe import _
 from frappe.model.document import Document
 from frappe.utils import cint, flt
 
+from ophis_emr_core.emr_core import patient_billing
 from ophis_emr_core.emr_core.chart import validate_encounter
 
 
@@ -27,7 +28,8 @@ class BillingClaim(Document):
 			item.amount = flt(item.fee) * cint(item.units)
 			self.total += item.amount
 
-		if self.payer == "OHIP" and not frappe.db.get_value("Patient", self.patient, "health_card_number"):
+		card = patient_billing.get_health_card(self.patient) if self.payer == "OHIP" else None
+		if self.payer == "OHIP" and not (card and card.province == "ON"):
 			frappe.throw(_("An OHIP claim needs a health card number on the patient's record."))
 		if self.payer != "OHIP" and not (self.policy_number or "").strip():
 			frappe.throw(_("A {0} claim needs the policy number.").format(self.payer))

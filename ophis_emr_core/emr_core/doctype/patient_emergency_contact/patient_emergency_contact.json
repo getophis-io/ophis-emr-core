@@ -50,7 +50,8 @@
    "reqd": 1,
    "in_list_view": 1,
    "length": 255,
-   "description": "Stored encrypted."
+   "description": "Stored encrypted.",
+   "mask": 1
   },
   {
    "fieldname": "email",
@@ -58,7 +59,8 @@
    "label": "Email",
    "options": "Email",
    "length": 255,
-   "description": "Stored encrypted."
+   "description": "Stored encrypted.",
+   "mask": 1
   },
   {
    "fieldname": "address",
@@ -76,7 +78,7 @@
  "index_web_pages_for_search": 0,
  "istable": 1,
  "links": [],
- "modified": "2026-10-15 17:00:00.000000",
+ "modified": "2026-11-18 18:00:00.000000",
  "modified_by": "Administrator",
  "module": "EMR Core",
  "name": "Patient Emergency Contact",
