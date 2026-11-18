@@ -159,7 +159,7 @@ def render_pdf(order) -> bytes:
 				widget[NameObject("/F")] = NumberObject(HIDDEN)
 				widget.pop("/A", None)
 				continue
-			for part in filter(None, (widget, parent)):
+			for part in (part for part in (widget, parent) if part):
 				part[NameObject("/Ff")] = NumberObject(int(part.get("/Ff", flags)) | READ_ONLY)
 
 			if name not in buttons:

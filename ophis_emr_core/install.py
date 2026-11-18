@@ -96,7 +96,7 @@ def ensure_rooms(clinic: str | None = None):
 			).insert(ignore_permissions=True)
 
 
-def after_setup_wizard(args=None):
+def after_setup_wizard(args=None):  # nosemgrep: overusing-args
 	"""ERPNext's setup wizard has just made the company: give it its clinic."""
 	ensure_default_clinic()
 

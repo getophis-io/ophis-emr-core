@@ -45,8 +45,11 @@ class PractitionerBillingProfile(Document):
 				if frappe.db.get_value("Clinic", row.clinic, "province") != self.province:
 					frappe.throw(_("Row {0}: {1} is not in {2}.").format(row.idx, row.clinic, self.province))
 			if (row.key, row.clinic or None) in seen:
-				where = _(" at {0}").format(row.clinic) if row.clinic else ""
-				frappe.throw(_("Row {0}: {1}{2} is given twice.").format(row.idx, key.label, where))
+				if row.clinic:
+					frappe.throw(
+						_("Row {0}: {1} at {2} is given twice.").format(row.idx, key.label, row.clinic)
+					)
+				frappe.throw(_("Row {0}: {1} is given twice.").format(row.idx, key.label))
 			seen.add((row.key, row.clinic or None))
 
 		for key in keys.values():
