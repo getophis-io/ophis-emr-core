@@ -1,0 +1,70 @@
+name: Lint
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  pre-commit:
+    name: Pre-commit (ruff, file checks, ground rules)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: pre-commit/action@v3.0.1
+
+  semgrep:
+    name: Semgrep (Frappe rules)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      # Frappe's own rules: commits inside controllers, untranslated strings, unsafe SQL,
+      # missing permission checks on whitelisted methods and similar Frappe-specific mistakes.
+      - name: Download Frappe Semgrep rules
+        run: git clone --depth 1 https://github.com/frappe/semgrep-rules.git "$RUNNER_TEMP/frappe-semgrep-rules"
+
+      - name: Run Semgrep
+        run: |
+          pip install semgrep
+          semgrep scan --error --metrics=off \
+            --config "$RUNNER_TEMP/frappe-semgrep-rules/rules" \
+            --config r/python.lang.correctness \
+            ophis_emr_core
+
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # The gitleaks CLI rather than gitleaks-action, which needs a paid licence for organisation repos.
+      - name: Run gitleaks over the full history
+        env:
+          GITLEAKS_VERSION: 8.21.2
+        run: |
+          curl -sSfL "https://github.com/gitleaks/gitleaks/releases/download/v${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION}_linux_x64.tar.gz" \
+            | tar -xz -C "$RUNNER_TEMP" gitleaks
+          "$RUNNER_TEMP/gitleaks" git --redact --verbose .

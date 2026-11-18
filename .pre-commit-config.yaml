@@ -1,0 +1,50 @@
+# Run locally with `pre-commit install` (once), or `pre-commit run --all-files`.
+# CI runs the same hooks (.github/workflows/lint.yml), so a commit that passes here passes there.
+exclude: '\.pdf$'
+fail_fast: false
+
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-ast
+      - id: check-json
+      - id: check-toml
+      - id: check-yaml
+      - id: check-merge-conflict
+      - id: check-added-large-files
+        args: ["--maxkb=1024"]
+      - id: debug-statements
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: mixed-line-ending
+        args: ["--fix=lf"]
+      - id: detect-private-key
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.17.5
+    hooks:
+      - id: ruff-check
+        args: ["--fix"]
+      - id: ruff-format
+
+  # Project ground rules from AGENTS.md that a machine can check.
+  - repo: local
+    hooks:
+      - id: no-ui
+        name: "No UI: no JS, CSS, pages or public assets in the core"
+        language: fail
+        entry: "The core has no UI. Screens and desk scripts belong to the app built on it:"
+        files: '(\.(js|ts|vue|jsx|tsx|css|scss|less)$|/public/|/www/|/page/)'
+
+      - id: no-app-imports
+        name: "Never import an app built on the core"
+        language: pygrep
+        entry: '^\s*(from|import)\s+(strmlne_emr|ophis_(?!emr_core)\w+)'
+        types: [python]
+
+      - id: no-frappe-health
+        name: "No Frappe Health / Marley"
+        language: pygrep
+        entry: '^\s*(from|import)\s+(healthcare|marley)\b'
+        types: [python]
