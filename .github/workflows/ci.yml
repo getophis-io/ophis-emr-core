@@ -1,0 +1,137 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+env:
+  FRAPPE_BRANCH: version-16
+  ERPNEXT_BRANCH: version-16
+  SITE: test_site
+  BENCH: /home/runner/frappe-bench
+
+jobs:
+  tests:
+    name: Install, migrate and test
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      mariadb:
+        image: mariadb:11.8
+        env:
+          MARIADB_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="healthcheck.sh --connect --innodb_initialized"
+          --health-interval=5s --health-timeout=5s --health-retries=30
+      redis-cache:
+        image: redis:7-alpine
+        ports:
+          - 13000:6379
+      redis-queue:
+        image: redis:7-alpine
+        ports:
+          - 11000:6379
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: ophis_emr_core
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.14"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Cache pip and yarn
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cache/pip
+            ~/.cache/yarn
+          key: deps-${{ runner.os }}-py3.14-${{ env.FRAPPE_BRANCH }}-${{ hashFiles('ophis_emr_core/pyproject.toml') }}
+          restore-keys: deps-${{ runner.os }}-py3.14-${{ env.FRAPPE_BRANCH }}-
+
+      - name: Install system packages
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends mariadb-client libmariadb-dev pkg-config
+
+      - name: Configure MariaDB for Frappe
+        run: |
+          mariadb -h 127.0.0.1 -P 3306 -u root -proot -e "SET GLOBAL character_set_server = 'utf8mb4'"
+          mariadb -h 127.0.0.1 -P 3306 -u root -proot -e "SET GLOBAL collation_server = 'utf8mb4_unicode_ci'"
+
+      # A fresh key for every run. The data is synthetic and thrown away with the runner,
+      # so the key never needs to be stored as a secret.
+      - name: Generate PII encryption key
+        run: |
+          key="$(python -c 'import base64, secrets; print(base64.urlsafe_b64encode(secrets.token_bytes(32)).decode())')"
+          echo "::add-mask::$key"
+          echo "PII_ENCRYPTION_KEY=$key" >> "$GITHUB_ENV"
+
+      - name: Set up bench
+        run: |
+          pip install frappe-bench
+          bench init "$BENCH" \
+            --frappe-branch "$FRAPPE_BRANCH" \
+            --python "$(which python)" \
+            --skip-redis-config-generation \
+            --skip-assets \
+            --no-backups
+          cd "$BENCH"
+          bench set-config -g db_host 127.0.0.1
+          bench set-config -g redis_cache redis://127.0.0.1:13000
+          bench set-config -g redis_queue redis://127.0.0.1:11000
+          bench set-config -g redis_socketio redis://127.0.0.1:13000
+
+      - name: Get apps
+        working-directory: ${{ env.BENCH }}
+        run: |
+          bench get-app --skip-assets --branch "$ERPNEXT_BRANCH" erpnext
+          bench get-app --skip-assets ophis_emr_core "$GITHUB_WORKSPACE/ophis_emr_core"
+          bench setup requirements --dev --python
+
+      # Only ERPNext and the core: the tests must pass without any app built on the core.
+      - name: Create site and install apps
+        working-directory: ${{ env.BENCH }}
+        run: |
+          bench new-site "$SITE" \
+            --mariadb-root-password root \
+            --admin-password admin \
+            --mariadb-user-host-login-scope='%'
+          bench --site "$SITE" install-app erpnext
+          bench --site "$SITE" install-app ophis_emr_core
+          bench --site "$SITE" set-config allow_tests true
+
+      # A second migrate on an installed site runs before/after_migrate again and every patch
+      # is already recorded, so this catches migrate hooks that are not safe to repeat.
+      - name: Migrate
+        working-directory: ${{ env.BENCH }}
+        run: bench --site "$SITE" migrate
+
+      - name: Run tests
+        working-directory: ${{ env.BENCH }}
+        run: bench --site "$SITE" run-tests --app ophis_emr_core --coverage
+
+      - name: Upload coverage
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage
+          path: ${{ env.BENCH }}/sites/coverage.xml
+          if-no-files-found: ignore
