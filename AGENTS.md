@@ -24,6 +24,10 @@ notifications and the like. They import this app; this app never imports any app
   (walk-ins and the rules around a visit in progress),
   `drug_data.py` (Health Canada DPD import), `testing.py` (factories shared by tests and by apps
   built on the core).
+- `ophis_emr_core/emr_core/billing_codes/` — fee and diagnosis codes: the service callers use
+  (`__init__.py`), versioned import (`importing.py`), province providers (`providers.py`, the
+  `billing_code_providers` hook), the standard CSV provider (`standard.py`), and the contract
+  tests every provider must pass (`contract.py`).
 - `ophis_emr_core/emr_core/requisitions/` — provincial lab requisition forms, one module per province.
 - `ophis_emr_core/integrations/` — provincial systems and payers, one module per province.
 

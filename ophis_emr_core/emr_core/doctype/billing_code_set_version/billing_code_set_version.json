@@ -1,0 +1,300 @@
+{
+ "actions": [],
+ "autoname": "format:{payer}-{kind}-{####}",
+ "creation": "2026-11-19 09:00:00.000000",
+ "description": "One published fee or diagnosis code file of a province's health plan, imported. It is staged for review, then activated from its effective date; a later version takes over from its own effective date. Codes are never edited or deleted: a version is retired instead.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "payer",
+  "province",
+  "kind",
+  "source_file",
+  "column_break_main",
+  "status",
+  "source_name",
+  "source_version",
+  "published_on",
+  "language",
+  "section_dates",
+  "effective_from",
+  "column_break_dates",
+  "effective_to",
+  "section_import",
+  "importer",
+  "checksum",
+  "code_count",
+  "column_break_import",
+  "imported_by",
+  "imported_on",
+  "import_error",
+  "section_review",
+  "diff_summary",
+  "diff",
+  "section_activation",
+  "activated_by",
+  "activated_on",
+  "column_break_activation",
+  "retired_by",
+  "retired_on",
+  "superseded_by"
+ ],
+ "fields": [
+  {
+   "fieldname": "payer",
+   "fieldtype": "Link",
+   "label": "Health Plan",
+   "options": "Payer",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "link_filters": "[[\"Payer\", \"payer_type\", \"=\", \"Provincial Health Plan\"]]"
+  },
+  {
+   "fieldname": "province",
+   "fieldtype": "Data",
+   "label": "Province",
+   "fetch_from": "payer.province",
+   "read_only": 1,
+   "length": 2,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "kind",
+   "fieldtype": "Select",
+   "label": "Kind",
+   "options": "Fee\nDiagnosis",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "source_file",
+   "fieldtype": "Attach",
+   "label": "Source File",
+   "reqd": 1,
+   "description": "The file as published, kept as uploaded"
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Queued\nStaged\nActive\nRetired\nFailed",
+   "default": "Queued",
+   "read_only": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "source_name",
+   "fieldtype": "Data",
+   "label": "Source Name",
+   "description": "What the file is, e.g. the schedule's title"
+  },
+  {
+   "fieldname": "source_version",
+   "fieldtype": "Data",
+   "label": "Source Version"
+  },
+  {
+   "fieldname": "published_on",
+   "fieldtype": "Date",
+   "label": "Published On"
+  },
+  {
+   "fieldname": "language",
+   "fieldtype": "Select",
+   "label": "Language",
+   "options": "en\nfr",
+   "default": "en",
+   "description": "The language of the file's descriptions"
+  },
+  {
+   "fieldname": "section_dates",
+   "fieldtype": "Section Break",
+   "label": "Effective Dates"
+  },
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "in_list_view": 1,
+   "description": "From when its codes apply. Needed to activate it"
+  },
+  {
+   "fieldname": "column_break_dates",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "effective_to",
+   "fieldtype": "Date",
+   "label": "Effective To",
+   "read_only": 1,
+   "description": "When the next active version takes over: the first day this one no longer applies"
+  },
+  {
+   "fieldname": "section_import",
+   "fieldtype": "Section Break",
+   "label": "Import"
+  },
+  {
+   "fieldname": "importer",
+   "fieldtype": "Data",
+   "label": "Importer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "checksum",
+   "fieldtype": "Data",
+   "label": "Checksum (SHA-256)",
+   "read_only": 1,
+   "length": 64,
+   "search_index": 1
+  },
+  {
+   "fieldname": "code_count",
+   "fieldtype": "Int",
+   "label": "Codes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_import",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "imported_by",
+   "fieldtype": "Link",
+   "label": "Imported By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "imported_on",
+   "fieldtype": "Datetime",
+   "label": "Imported On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "import_error",
+   "fieldtype": "Small Text",
+   "label": "Import Error",
+   "read_only": 1,
+   "depends_on": "eval:doc.status=='Failed'"
+  },
+  {
+   "fieldname": "section_review",
+   "fieldtype": "Section Break",
+   "label": "Changes",
+   "depends_on": "eval:doc.diff_summary"
+  },
+  {
+   "fieldname": "diff_summary",
+   "fieldtype": "Small Text",
+   "label": "Changes from the Active Version",
+   "read_only": 1
+  },
+  {
+   "fieldname": "diff",
+   "fieldtype": "JSON",
+   "label": "Change Details",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_activation",
+   "fieldtype": "Section Break",
+   "label": "Activation"
+  },
+  {
+   "fieldname": "activated_by",
+   "fieldtype": "Link",
+   "label": "Activated By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "activated_on",
+   "fieldtype": "Datetime",
+   "label": "Activated On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_activation",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "retired_by",
+   "fieldtype": "Link",
+   "label": "Retired By",
+   "options": "User",
+   "read_only": 1
+  },
+  {
+   "fieldname": "retired_on",
+   "fieldtype": "Datetime",
+   "label": "Retired On",
+   "read_only": 1
+  },
+  {
+   "fieldname": "superseded_by",
+   "fieldtype": "Link",
+   "label": "Superseded By",
+   "options": "Billing Code Set Version",
+   "read_only": 1,
+   "description": "The version that replaced this one from the same date"
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-19 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Billing Code Set Version",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Billing Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "source_name",
+ "track_changes": 1
+}

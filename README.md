@@ -33,6 +33,7 @@ One module, `EMR Core`. From ERPNext and Frappe it uses only standard DocTypes: 
 | Orders and results | `Patient Order`, `Patient Referral`, `Lab Result`, `Lab Result Item`, `Received Report` |
 | Prescribing | `Prescription`, `Prescription Item`, `Drug Product` |
 | Billing | `Billing Claim`, `Billing Claim Item` |
+| Billing codes | `Billing Code Set Version`, `Billing Fee Code`, `Billing Fee Rule`, `Billing Diagnosis Code`, `Billing Code Description`, `Billing Favourite` |
 | Integrations | `EMR Integration`, `EMR Integration Log` |
 | Audit | `Patient Event` |
 
@@ -59,8 +60,9 @@ Rules worth knowing:
 - **Audit.** Every insert, update, signature and deletion of a record that belongs to a patient is
   written to `Patient Event`. Clinical DocTypes also keep Frappe's Version and View Log.
 
-Roles: `EMR Physician`, `EMR Nurse`, `EMR Reception`, `EMR Clinic Admin`. Reception can register and
-book but cannot read the clinical chart.
+Roles: `EMR Physician`, `EMR Nurse`, `EMR Reception`, `EMR Clinic Admin`, `EMR Billing Admin`. Reception
+can register and book but cannot read the clinical chart. Billing Admin loads and activates billing
+code files.
 
 ## Patient identifiers are encrypted
 
@@ -185,6 +187,42 @@ the practitioner's Ontario billing profile. `testing.make_practitioner` takes th
 - **Drug products** are loaded from Health Canada's Drug Product Database:
   `bench --site <site> execute ophis_emr_core.emr_core.drug_data.import_dpd`.
 
+## Billing codes
+
+Fee codes and billing diagnosis codes of each province's health plan, behind one province-neutral
+service (`emr_core/billing_codes/`). Callers pass a jurisdiction (a province and its health plan
+`Payer`: `billing_codes.get_jurisdiction(clinic=...)`) and get the codes as of a service date:
+`get_fee_code`, `search_fee_codes`, `get_diagnosis_code`, `search_diagnosis_codes`,
+`validate_bill_line`, `price_bill_line`, `favourites`, `resolve` (a stored `CodeRef`), and
+`build_context` (the patient's age and sex, the practitioner's billing values, and what was already
+billed). Money is integer cents in the site's default currency. Results are the dataclasses in
+`billing_codes/types.py`.
+
+- **Versions.** Each imported file is a `Billing Code Set Version` of one health plan and kind (Fee
+  or Diagnosis), holding its codes. An active version applies from its effective date until the
+  next active version's, and a code can have its own dates within it, so a past service date
+  still finds the code that applied then. Codes are never edited or deleted.
+- **Importing** (`billing_codes/importing.py`). `upload` (or a version made on the desk with its
+  file attached) keeps the file and its checksum; the same file again is the same version. A
+  background job parses it with the province's importer and stages it, or marks it Failed with
+  every bad line. The diff against the version in effect (added, retired, fee, description and
+  rule changes) is on the version. `activate` puts it into effect; one activated from the same
+  date replaces the old one. `retire` withdraws it and brings back what it replaced (the
+  rollback); a retired version can be activated again. Practitioners whose favourite codes'
+  fees change are told through `emr_notify`. These functions do not check permissions: the app's
+  endpoint does.
+- **Rules and pricing.** A fee code carries `Billing Fee Rule` rows. The core checks age, sex,
+  specialty, location, per-day and per-year limits, codes that exclude or require each other,
+  minimum minutes and maximum units (`billing_codes/rules.py`). A rule type it does not know comes
+  back as a warning, never as a pass. Pricing is fee times units; a code with no set fee is not
+  priced.
+- **Providers** (`billing_codes/providers.py`). Each province's importers, extensions, rules and
+  pricing come from a `CodeProvider` registered under the `billing_code_providers` hook. The core
+  registers the standard provider for every province (`"*"`). It reads CSV files in the core's
+  layout, described in `billing_codes/standard.py` (`standard.template(kind)` gives the header
+  row). A province's own provider (Ontario's OHIP files, say) is registered by province and takes
+  over. Every provider must pass the shared contract tests (`billing_codes/contract.py`).
+
 ## Services for apps built on it
 
 The interface belongs to the app on top; the rules it calls are here, as plain Python:
@@ -205,6 +243,7 @@ The stage changes themselves are `Encounter` methods (`pick_up`, `begin`, `hand_
 | `emr_notify` | `(users, text, doctype, name)` | Telling particular users about a document (a visit assigned to them) |
 | `practitioner_working_periods` | `(practitioner, day)` → `[(start, end), …]` or None | A staff schedule's working hours; without an answer, clinic hours (9 to 5, Monday to Friday) |
 | `phi_encrypted_fields` | `{DocType: [field, ...]}` | Another app's patient information, encrypted, rotated and redacted with the core's |
+| `billing_code_providers` | `{province or "*": "path.to.CodeProvider"}` | A province's fee and diagnosis codes: its file importers, rules and pricing. The last app to register a province wins |
 
 Without a notifier nothing is sent. See `emr_core/notify.py` for the placeholders in `text`.
 
