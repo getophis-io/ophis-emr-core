@@ -140,11 +140,12 @@ class TestSecondProvider(ProviderContract, IntegrationTestCase):
 		super().setUp()
 
 	def render_fee_file(self, rows):
-		lines = ["TSTFEE 2026-A"] + [
-			f"{row['code']:<5}{'' if row['fee_cents'] is None else row['fee_cents']:>8}"
-			f"{'Y' if row['requires_diagnosis'] else 'N'}Y{row['description']}"
-			for row in rows
-		]
+		def line(row):
+			fee = "" if row["fee_cents"] is None else row["fee_cents"]
+			needs_diagnosis = "Y" if row["requires_diagnosis"] else "N"
+			return f"{row['code']:<5}{fee:>8}{needs_diagnosis}Y{row['description']}"
+
+		lines = ["TSTFEE 2026-A", *(line(row) for row in rows)]
 		return SourceFile("fees.dat", "\n".join(lines).encode())
 
 	def render_diagnosis_file(self, rows):

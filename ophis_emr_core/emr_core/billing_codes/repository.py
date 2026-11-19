@@ -10,6 +10,8 @@ import json
 from dataclasses import replace
 
 import frappe
+from frappe.query_builder import Order
+from frappe.query_builder.functions import Count
 from frappe.utils import getdate
 
 from ophis_emr_core.emr_core.billing_codes.providers import CodeProvider
@@ -115,39 +117,38 @@ def search(provider: CodeProvider, payer: str, kind: str, query: SearchQuery) ->
 		return empty
 
 	table = TABLES[kind]
-	values = {"code_set": version.name, "day": day, "parenttype": table}
-	conditions = [
-		"t.code_set = %(code_set)s",
-		"(t.effective_from is null or t.effective_from <= %(day)s)",
-		"(t.effective_to is null or t.effective_to > %(day)s)",
-	]
+	t, d = frappe.qb.DocType(table), frappe.qb.DocType(DESCRIPTION)
+	condition = (
+		(t.code_set == version.name)
+		& (t.effective_from.isnull() | (t.effective_from <= day))
+		& (t.effective_to.isnull() | (t.effective_to > day))
+	)
 	if query.section:
-		conditions.append(f"t.{'section' if kind == FEE else 'category'} = %(section)s")
-		values["section"] = query.section
+		condition &= (t.section if kind == FEE else t.category) == query.section
 	if query.billable_only and kind == DIAGNOSIS:
-		conditions.append("t.is_billable = 1")
-	words = query.text.split()
-	for index, word in enumerate(words):
+		condition &= t.is_billable == 1
+	for word in query.text.split():
 		escaped = word.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
-		values[f"prefix{index}"] = f"{escaped.upper()}%"
-		values[f"word{index}"] = f"%{escaped}%"
-		conditions.append(
-			f"(t.code like %(prefix{index})s or t.description like %(word{index})s"
-			f" or exists (select 1 from `tab{DESCRIPTION}` d where d.parent = t.name"
-			f" and d.parenttype = %(parenttype)s and d.description like %(word{index})s))"
+		translated = (
+			frappe.qb.from_(d)
+			.select(d.parent)
+			.where((d.parenttype == table) & d.description.like(f"%{escaped}%"))
 		)
-	where = " and ".join(conditions)
-	values["exact"] = query.text.strip().upper()
-	values["start"], values["length"] = int(query.start), int(query.page_length)
+		condition &= (
+			t.code.like(f"{escaped.upper()}%") | t.description.like(f"%{escaped}%") | t.name.isin(translated)
+		)
 
-	total = frappe.db.sql(f"select count(*) from `tab{table}` t where {where}", values)[0][0]
+	total = frappe.qb.from_(t).select(Count("*")).where(condition).run()[0][0]
 	names = [
 		row[0]
-		for row in frappe.db.sql(
-			f"select t.name from `tab{table}` t where {where}"
-			" order by (t.code = %(exact)s) desc, t.code asc limit %(start)s, %(length)s",
-			values,
-		)
+		for row in frappe.qb.from_(t)
+		.select(t.name)
+		.where(condition)
+		.orderby(t.code == query.text.strip().upper(), order=Order.desc)
+		.orderby(t.code)
+		.limit(int(query.page_length))
+		.offset(int(query.start))
+		.run()
 	]
 	if not names:
 		return Page([], total, query.start, query.page_length)
@@ -177,11 +178,14 @@ def snapshot(kind: str, code_set: str) -> dict[str, tuple]:
 	rows = frappe.get_all(TABLES[kind], filters={"code_set": code_set}, fields=["name", *fields])
 	rules = {}
 	if kind == FEE:
-		for parent, rule_type, parameters, severity in frappe.db.sql(
-			f"""select r.parent, r.rule_type, r.parameters, r.severity
-			from `tab{RULE}` r join `tab{TABLES[FEE]}` t on r.parent = t.name
-			where t.code_set = %s and r.parenttype = %s""",
-			(code_set, TABLES[FEE]),
+		r, t = frappe.qb.DocType(RULE), frappe.qb.DocType(TABLES[FEE])
+		for parent, rule_type, parameters, severity in (
+			frappe.qb.from_(r)
+			.join(t)
+			.on(r.parent == t.name)
+			.select(r.parent, r.rule_type, r.parameters, r.severity)
+			.where((t.code_set == code_set) & (r.parenttype == TABLES[FEE]))
+			.run()
 		):
 			rules.setdefault(parent, []).append((rule_type, _canonical(parameters), severity))
 	return {
