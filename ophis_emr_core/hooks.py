@@ -36,8 +36,14 @@ doc_events = {
 	},
 }
 
+# Who reads each province's fee and diagnosis codes (see `emr_core/billing_codes/providers.py`).
+# "*" serves every province without its own provider: CSV files in the core's layout. Another app
+# registers a province's own, which wins: {"ON": "my_app.billing.OntarioProvider"}.
+billing_code_providers = {"*": "ophis_emr_core.emr_core.billing_codes.standard.StandardProvider"}
+
 # Hooks this app asks other apps (see the README):
 #
 # emr_notify_visit     a visit needs staff: (encounter, text, nurse=None, to_physicians=False)
 # emr_notify           tell these users about a document: (users, text, doctype, name)
 # phi_encrypted_fields {DocType: [field, ...]} of patient information other apps encrypt
+# billing_code_providers {province: provider class path} of each province's billing codes

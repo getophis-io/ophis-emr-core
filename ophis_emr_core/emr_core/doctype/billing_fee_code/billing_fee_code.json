@@ -1,0 +1,234 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-11-19 09:00:00.000000",
+ "description": "A fee code of a province's schedule, as imported in one code set version. Read only.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "code",
+  "description",
+  "short_description",
+  "section",
+  "column_break_main",
+  "code_set",
+  "payer",
+  "effective_from",
+  "effective_to",
+  "section_fee",
+  "fee",
+  "fee_cents",
+  "no_set_fee",
+  "unit_type",
+  "column_break_fee",
+  "requires_diagnosis",
+  "fee_components",
+  "section_rules_section",
+  "rules",
+  "descriptions",
+  "extensions"
+ ],
+ "fields": [
+  {
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "label": "Code",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "short_description",
+   "fieldtype": "Data",
+   "label": "Short Description",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section",
+   "fieldtype": "Data",
+   "label": "Section",
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "code_set",
+   "fieldtype": "Link",
+   "label": "Code Set Version",
+   "options": "Billing Code Set Version",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "payer",
+   "fieldtype": "Link",
+   "label": "Health Plan",
+   "options": "Payer",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "effective_to",
+   "fieldtype": "Date",
+   "label": "Effective To",
+   "read_only": 1,
+   "description": "The first day it no longer applies"
+  },
+  {
+   "fieldname": "section_fee",
+   "fieldtype": "Section Break",
+   "label": "Fee"
+  },
+  {
+   "fieldname": "fee",
+   "fieldtype": "Currency",
+   "label": "Fee",
+   "read_only": 1,
+   "in_list_view": 1,
+   "description": "Blank where the fee is set case by case"
+  },
+  {
+   "fieldname": "fee_cents",
+   "fieldtype": "Int",
+   "label": "Fee (cents)",
+   "read_only": 1,
+   "hidden": 1
+  },
+  {
+   "fieldname": "no_set_fee",
+   "fieldtype": "Check",
+   "label": "No Set Fee",
+   "read_only": 1,
+   "description": "Paid on independent consideration, or the amount depends on more than the schedule"
+  },
+  {
+   "fieldname": "unit_type",
+   "fieldtype": "Data",
+   "label": "Unit",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_fee",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "requires_diagnosis",
+   "fieldtype": "Check",
+   "label": "Requires Diagnosis",
+   "read_only": 1
+  },
+  {
+   "fieldname": "fee_components",
+   "fieldtype": "JSON",
+   "label": "Fee Components (cents)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_rules_section",
+   "fieldtype": "Section Break",
+   "label": "Rules"
+  },
+  {
+   "fieldname": "rules",
+   "fieldtype": "Table",
+   "label": "Rules",
+   "options": "Billing Fee Rule",
+   "read_only": 1
+  },
+  {
+   "fieldname": "descriptions",
+   "fieldtype": "Table",
+   "label": "Translations",
+   "options": "Billing Code Description",
+   "read_only": 1,
+   "description": "The code's text in other languages"
+  },
+  {
+   "fieldname": "extensions",
+   "fieldtype": "JSON",
+   "label": "Province Details",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-19 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Billing Fee Code",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Billing Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "description,section",
+ "show_title_field_in_link": 0,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "code"
+}

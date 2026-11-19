@@ -7,7 +7,8 @@ from ophis_emr_core.emr_core import phi, provinces
 
 # Desk roles the DocType permissions refer to. They are created before DocTypes are synced so
 # that the permission rows never point at a missing role.
-EMR_ROLES = ("EMR Physician", "EMR Nurse", "EMR Reception", "EMR Clinic Admin")
+# EMR Billing Admin loads and activates billing code files (`billing_codes.importing`).
+EMR_ROLES = ("EMR Physician", "EMR Nurse", "EMR Reception", "EMR Clinic Admin", "EMR Billing Admin")
 
 DEFAULT_APPOINTMENT_TYPES = {
 	"Office Visit": 15,
