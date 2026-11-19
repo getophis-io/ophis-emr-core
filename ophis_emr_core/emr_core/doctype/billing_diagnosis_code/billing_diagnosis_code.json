@@ -1,0 +1,169 @@
+{
+ "actions": [],
+ "autoname": "hash",
+ "creation": "2026-11-19 09:00:00.000000",
+ "description": "A diagnosis code of a province's health plan, as imported in one code set version. Read only.",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "code",
+  "description",
+  "category",
+  "is_billable",
+  "column_break_main",
+  "code_set",
+  "payer",
+  "effective_from",
+  "effective_to",
+  "section_more",
+  "descriptions",
+  "extensions"
+ ],
+ "fields": [
+  {
+   "fieldname": "code",
+   "fieldtype": "Data",
+   "label": "Code",
+   "reqd": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Small Text",
+   "label": "Description",
+   "reqd": 1,
+   "in_list_view": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Data",
+   "label": "Category",
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "is_billable",
+   "fieldtype": "Check",
+   "label": "Billable",
+   "default": "1",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_main",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "code_set",
+   "fieldtype": "Link",
+   "label": "Code Set Version",
+   "options": "Billing Code Set Version",
+   "reqd": 1,
+   "in_standard_filter": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "payer",
+   "fieldtype": "Link",
+   "label": "Health Plan",
+   "options": "Payer",
+   "read_only": 1,
+   "in_standard_filter": 1
+  },
+  {
+   "fieldname": "effective_from",
+   "fieldtype": "Date",
+   "label": "Effective From",
+   "read_only": 1
+  },
+  {
+   "fieldname": "effective_to",
+   "fieldtype": "Date",
+   "label": "Effective To",
+   "read_only": 1,
+   "description": "The first day it no longer applies"
+  },
+  {
+   "fieldname": "section_more",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "descriptions",
+   "fieldtype": "Table",
+   "label": "Translations",
+   "options": "Billing Code Description",
+   "read_only": 1,
+   "description": "The code's text in other languages"
+  },
+  {
+   "fieldname": "extensions",
+   "fieldtype": "JSON",
+   "label": "Province Details",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 0,
+ "links": [],
+ "modified": "2026-11-19 09:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "EMR Core",
+ "name": "Billing Diagnosis Code",
+ "naming_rule": "Random",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "role": "System Manager",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1,
+   "write": 1,
+   "create": 1,
+   "delete": 1
+  },
+  {
+   "role": "EMR Billing Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Physician",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Nurse",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Reception",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  },
+  {
+   "role": "EMR Clinic Admin",
+   "read": 1,
+   "report": 1,
+   "print": 1,
+   "export": 1
+  }
+ ],
+ "row_format": "Dynamic",
+ "search_fields": "description,category",
+ "show_title_field_in_link": 0,
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "code"
+}
